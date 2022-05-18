@@ -457,8 +457,9 @@ void SCR_DisplayTicRate(void)
 	tic_t i;
 	tic_t ontic = I_GetTime();
 	tic_t totaltics = 0;
+	
 	INT32 ticcntcolor = 0;
-	const INT32 h = vid.height-(8*vid.dupy);
+	UINT32 flags = V_SNAPTORIGHT|V_SNAPTOBOTTOM;
 
 	if (gamestate == GS_NULL)
 		return;
@@ -476,14 +477,15 @@ void SCR_DisplayTicRate(void)
 	else if (totaltics == TICRATE) ticcntcolor = V_GREENMAP;
 
 	if (cv_ticrate.value == 2) // compact counter
-		V_DrawString(vid.width-(16*vid.dupx), h,
-			ticcntcolor|V_NOSCALESTART|V_USERHUDTRANS, va("%02d", totaltics));
-	else if (cv_ticrate.value == 1) // full counter
-	{
-		V_DrawString(vid.width-(72*vid.dupx), h,
-			V_YELLOWMAP|V_NOSCALESTART|V_USERHUDTRANS, "FPS:");
-		V_DrawString(vid.width-(40*vid.dupx), h,
-			ticcntcolor|V_NOSCALESTART|V_USERHUDTRANS, va("%02d/%02u", totaltics, TICRATE));
+		V_DrawRightAlignedString(BASEVIDWIDTH - 2, 190, flags|ticcntcolor|V_USERHUDTRANS, va("%02d", totaltics));
+	
+	else if (cv_ticrate.value == 1) // full counter (kart styled)
+	{	
+		// FPS:
+		V_DrawRightAlignedThinString(BASEVIDWIDTH - 2, 183, flags|V_YELLOWMAP|V_USERHUDTRANS, "FPS:");
+
+		// the actual fps
+		V_DrawRightAlignedThinString(BASEVIDWIDTH - 2, 191, flags|ticcntcolor|V_USERHUDTRANS, va("%02d/%02u", totaltics, TICRATE));
 	}
 
 	lasttic = ontic;
@@ -494,8 +496,24 @@ void SCR_DisplayLocalPing(void)
 	UINT32 ping = playerpingtable[consoleplayer];	// consoleplayer's ping is everyone's ping in a splitnetgame :P
 	if (cv_showping.value == 1 || (cv_showping.value == 2 && servermaxping && ping > servermaxping))	// only show 2 (warning) if our ping is at a bad level
 	{
-		INT32 dispy = cv_ticrate.value ? 180 : 189;
-		HU_drawPing(307, dispy, ping, true, V_SNAPTORIGHT | V_SNAPTOBOTTOM);
+		INT32 dispy;
+
+		// i like switch, its like a elseif chain, but better than ever. #Jaden
+		switch (cv_ticrate.value)
+		{
+			case 1: // full
+				dispy = 172;
+				break;
+
+			case 2: // compact
+				dispy = 180;
+				break;
+
+			default:
+				dispy = 188;
+		}
+		
+		HU_drawPing(307, dispy, ping, false, V_SNAPTORIGHT | V_SNAPTOBOTTOM);
 	}
 }
 

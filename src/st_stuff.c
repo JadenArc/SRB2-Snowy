@@ -985,14 +985,18 @@ static void ST_drawLivesArea(void)
 
 static void ST_drawInput(void)
 {
+	if (!cv_showinput.value) // dont draw this if showinput is disabled! 
+		return;
+
 	const INT32 accent = V_SNAPTOLEFT|V_SNAPTOBOTTOM|(stplyr->skincolor ? skincolors[stplyr->skincolor].ramp[4] : 0);
 	INT32 col;
 	UINT8 offs;
 
-	INT32 x = hudinfo[HUD_LIVES].x, y = hudinfo[HUD_LIVES].y;
+	INT32 x = hudinfo[HUD_LIVES].x;
+	INT32 y = hudinfo[HUD_LIVES].y - ((modeattacking) ? 0 : 22);
 
 	if (stplyr->powers[pw_carry] == CR_NIGHTSMODE)
-		y -= 16;
+		y -= (modeattacking) ? 16 : 8;
 
 	if (F_GetPromptHideHud(y))
 		return;
@@ -1150,52 +1154,56 @@ static void ST_drawInput(void)
 
 #undef drawbutt
 
-	// text above
-	x -= 2;
-	y -= 13;
-	if (stplyr->powers[pw_carry] != CR_NIGHTSMODE)
+	// draw this only in record attack!
+	if (modeattacking)
 	{
-		if (stplyr->pflags & PF_AUTOBRAKE)
+		// text above
+		x -= 2;
+		y -= 13;
+		if (stplyr->powers[pw_carry] != CR_NIGHTSMODE)
 		{
-			V_DrawThinString(x, y,
-				hudinfo[HUD_LIVES].f|
-				((!stplyr->powers[pw_carry]
-				&& (stplyr->pflags & PF_APPLYAUTOBRAKE)
-				&& !(stplyr->cmd.sidemove || stplyr->cmd.forwardmove)
-				&& (stplyr->rmomx || stplyr->rmomy)
-				&& (!stplyr->capsule || (stplyr->capsule->reactiontime != (stplyr-players)+1)))
-				? 0 : V_GRAYMAP),
-				"AUTOBRAKE");
-			y -= 8;
+			if (stplyr->pflags & PF_AUTOBRAKE)
+			{
+				V_DrawThinString(x, y,
+					hudinfo[HUD_LIVES].f|
+					((!stplyr->powers[pw_carry]
+					&& (stplyr->pflags & PF_APPLYAUTOBRAKE)
+					&& !(stplyr->cmd.sidemove || stplyr->cmd.forwardmove)
+					&& (stplyr->rmomx || stplyr->rmomy)
+					&& (!stplyr->capsule || (stplyr->capsule->reactiontime != (stplyr-players)+1)))
+					? 0 : V_GRAYMAP),
+					"AUTOBRAKE");
+				y -= 8;
+			}
+			switch (P_ControlStyle(stplyr))
+			{
+			case CS_LMAOGALOG:
+				V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "ANALOG");
+				y -= 8;
+				break;
+
+			case CS_SIMPLE:
+				V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "AUTOMATIC");
+				y -= 8;
+				break;
+
+			case CS_STANDARD:
+				V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "MANUAL");
+				y -= 8;
+				break;
+
+			case CS_LEGACY:
+				V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "STRAFE");
+				y -= 8;
+				break;
+
+			default:
+				break;
+			}
 		}
-		switch (P_ControlStyle(stplyr))
-		{
-		case CS_LMAOGALOG:
-			V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "ANALOG");
-			y -= 8;
-			break;
-
-		case CS_SIMPLE:
-			V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "AUTOMATIC");
-			y -= 8;
-			break;
-
-		case CS_STANDARD:
-			V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "MANUAL");
-			y -= 8;
-			break;
-
-		case CS_LEGACY:
-			V_DrawThinString(x, y, hudinfo[HUD_LIVES].f, "STRAFE");
-			y -= 8;
-			break;
-
-		default:
-			break;
-		}
+		if (!demosynced) // should always be last, so it doesn't push anything else around
+			V_DrawThinString(x, y, hudinfo[HUD_LIVES].f|((leveltime & 4) ? V_YELLOWMAP : V_REDMAP), "BAD DEMO!!");
 	}
-	if (!demosynced) // should always be last, so it doesn't push anything else around
-		V_DrawThinString(x, y, hudinfo[HUD_LIVES].f|((leveltime & 4) ? V_YELLOWMAP : V_REDMAP), "BAD DEMO!!");
 }
 
 static patch_t *lt_patches[3];
@@ -2210,7 +2218,7 @@ static void ST_drawTextHUD(void)
 
 #define textHUDdraw(str) \
 {\
-	V_DrawThinString(16, y, V_PERPLAYER|V_HUDTRANS|V_SNAPTOLEFT|V_SNAPTOTOP, str);\
+	V_DrawThinString(16, y, V_PERPLAYER|V_HUDTRANS|V_SNAPTOLEFT|V_SNAPTOTOP|V_ALLOWLOWERCASE, str);\
 	y += 8;\
 }
 
@@ -2232,7 +2240,7 @@ static void ST_drawTextHUD(void)
 	{
 		if (!splitscreen && !donef12)
 		{
-			textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view"))
+			textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view."))
 			donef12 = true;
 		}
 	}
@@ -2243,13 +2251,13 @@ static void ST_drawTextHUD(void)
 		if (respawntime > 0 && !stplyr->spectator)
 			textHUDdraw(va(M_GetText("Respawn in %d..."), respawntime))
 		else
-			textHUDdraw(M_GetText("\x82""JUMP:""\x80 Respawn"))
+			textHUDdraw(M_GetText("\x82""JUMP:""\x80 Respawn."))
 	}
 	else if (stplyr->spectator && (!G_CoopGametype() || stplyr->playerstate == PST_LIVE))
 	{
 		if (!splitscreen && !donef12)
 		{
-			textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view"))
+			textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view."))
 			donef12 = true;
 		}
 
@@ -2289,7 +2297,7 @@ static void ST_drawTextHUD(void)
 			}
 		}
 		else if (G_GametypeHasSpectators())
-			textHUDdraw(M_GetText("\x82""FIRE:""\x80 Enter game"))
+			textHUDdraw(M_GetText("\x82""FIRE:""\x80 Enter game."))
 	}
 
 	if (G_CoopGametype() && (!stplyr->spectator || (!(maptol & TOL_NIGHTS) && G_IsSpecialStage(gamemap))) && (stplyr->exiting || (stplyr->pflags & PF_FINISHED)))
@@ -2323,11 +2331,11 @@ static void ST_drawTextHUD(void)
 			{
 				if (!splitscreen && !donef12)
 				{
-					textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view"))
+					textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view."))
 					donef12 = true;
 				}
 				total -= exiting;
-				textHUDdraw(va(M_GetText("%d player%s remaining"), total, ((total == 1) ? "" : "s")))
+				textHUDdraw(va(M_GetText("%d Player%s remaining."), total, ((total == 1) ? "" : "s")))
 			}
 		}
 	}
@@ -2350,7 +2358,7 @@ static void ST_drawTextHUD(void)
 		{
 			if (!splitscreen && !donef12)
 			{
-				textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view"))
+				textHUDdraw(M_GetText("\x82""VIEWPOINT:""\x80 Switch view."))
 				donef12 = true;
 			}
 			textHUDdraw(M_GetText("You cannot move while hiding."))
@@ -2600,7 +2608,7 @@ static void ST_overlayDrawer(void)
 {
 	// Decide whether to draw the stage title or not
 	boolean stagetitle = false;
-
+	
 	// Check for a valid level title
 	// If the HUD is enabled
 	// And, if Lua is running, if the HUD library has the stage title enabled
@@ -2624,6 +2632,9 @@ static void ST_overlayDrawer(void)
 				ST_drawTime();
 			if (LUA_HudEnabled(hud_rings))
 				ST_drawRings();
+
+			if (!demoplayback && LUA_HudEnabled(hud_input))
+				ST_drawInput();
 
 			if (!modeattacking && LUA_HudEnabled(hud_lives))
 				ST_drawLivesArea();
@@ -2692,16 +2703,17 @@ static void ST_overlayDrawer(void)
 			}
 		}
 
-		// If you are in overtime, put a big honkin' flashin' message on the screen.
-		if (((gametyperules & GTR_TIMELIMIT) && (gametyperules & GTR_OVERTIME)) && cv_overtime.value
-		&& (leveltime > (timelimitintics + TICRATE/2)) && cv_timelimit.value && (leveltime/TICRATE % 2 == 0))
-			V_DrawCenteredString(BASEVIDWIDTH/2, 184, V_PERPLAYER, M_GetText("OVERTIME!"));
-
 		// Draw Match-related stuff
 		//\note Match HUD is drawn no matter what gametype.
 		// ... just not if you're a spectator.
 		if (!stplyr->spectator && LUA_HudEnabled(hud_weaponrings))
 			ST_drawMatchHUD();
+
+		// If you are in overtime, put a big honkin' flashin' message on the screen.
+		if ((gametyperules & GTR_TIMELIMIT) && (gametyperules & GTR_OVERTIME) && (cv_overtime.value && (leveltime > (timelimitintics + TICRATE/2)) && cv_timelimit.value && (leveltime/5 & 1)))
+		{
+			V_DrawCenteredString(BASEVIDWIDTH/2, 184, V_PERPLAYER|V_REDMAP, "OVERTIME!");
+		}
 
 		// Race HUD Stuff
 		if (gametyperules & GTR_RACE)
@@ -2713,15 +2725,21 @@ static void ST_overlayDrawer(void)
 		else
 			ST_doHuntIconsAndSound();
 
-		if(!P_IsLocalPlayer(stplyr))
+		// Show name of player being displayed
+		if (!P_IsLocalPlayer(stplyr))
 		{
 			char name[MAXPLAYERNAME+1];
-			// shorten the name if its more than twelve characters.
-			strlcpy(name, player_names[stplyr-players], 13);
+			UINT32 flags = V_SNAPTORIGHT|V_SNAPTOTOP;
+			
+			// shorten the name if its more than eleven characters.
+			strlcpy(name, player_names[stplyr-players], 11);
 
-			// Show name of player being displayed
-			V_DrawCenteredString((BASEVIDWIDTH/6), BASEVIDHEIGHT-80, 0, M_GetText("Viewpoint:"));
-			V_DrawCenteredString((BASEVIDWIDTH/6), BASEVIDHEIGHT-64, V_ALLOWLOWERCASE, name);
+			// draw the name!
+			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 8, flags|V_ALLOWLOWERCASE|V_YELLOWMAP, "Viewpoint:");
+			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 16, flags|V_ALLOWLOWERCASE, name);
+
+			// ping???
+			HU_drawPing(BASEVIDWIDTH - 72, 12, stplyr->quittime ? UINT32_MAX : playerpingtable[(stplyr - players)], false, flags);
 		}
 
 		// This is where we draw all the fun cheese if you have the chasecam off!
@@ -2750,10 +2768,7 @@ static void ST_overlayDrawer(void)
 
 	if (!hu_showscores && (netgame || multiplayer) && LUA_HudEnabled(hud_textspectator))
 		ST_drawTextHUD();
-
-	if (modeattacking && !(demoplayback && hu_showscores))
-		ST_drawInput();
-
+	
 	ST_drawDebugInfo();
 }
 

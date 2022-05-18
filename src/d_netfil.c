@@ -1307,7 +1307,7 @@ void PT_FileFragment(void)
 
 	if (filenum >= fileneedednum)
 	{
-		DEBFILE(va("fileframent not needed %d>%d\n", filenum, fileneedednum));
+		DEBFILE(va("fileframent not needed %d > %d\n", filenum, fileneedednum));
 		//I_Error("Received an unneeded file fragment (file id received: %d, file id needed: %d)\n", filenum, fileneedednum);
 		return;
 	}
@@ -1390,8 +1390,12 @@ void PT_FileFragment(void)
 				free(file->ackpacket);
 				file->status = FS_FOUND;
 				file->justdownloaded = true;
-				CONS_Printf(M_GetText("Downloading %s...(done)\n"),
+				CONS_Printf(M_GetText("Finishing downloading %s.\n"),
 					filename);
+#ifndef NONET
+				downloadcompletednum++;
+				downloadcompletedsize += file->totalsize;
+#endif
 
 				// Tell the server we have received the file
 				netbuffer->packettype = PT_FILERECEIVED;

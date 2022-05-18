@@ -154,6 +154,28 @@ static CV_PossibleValue_t backcolor_cons_t[] = {{0, "White"}, 		{1, "Black"},		{
 
 consvar_t cons_backcolor = CVAR_INIT ("con_backcolor", "Green", CV_CALL|CV_SAVE, backcolor_cons_t, CONS_backcolor_Change);
 
+static CV_PossibleValue_t menuhighlight_cons_t[] =
+{
+	{V_YELLOWMAP,  "Always Yellow"},
+	{V_MAGENTAMAP, "Always Magenta"},
+	{V_GREENMAP,	 "Always Green"},
+	{V_BLUEMAP,	 "Always Blue"},
+	{V_REDMAP,	 "Always Red"},
+	{V_GRAYMAP,	 "Always Gray"},
+	{V_ORANGEMAP,  "Always Orange"},
+	{V_SKYMAP,	 "Always Sky"},
+	{V_PURPLEMAP,  "Always Purple"},
+	{V_AQUAMAP, 	 "Always Aqua"},
+	{V_PERIDOTMAP, "Always Peridot"},
+	{V_AZUREMAP,   "Always Azure"},
+	{V_BROWNMAP,	 "Always Brown"},
+	{V_ROSYMAP,	 "Always Rosy"},
+	{V_INVERTMAP,	 "Always Inverted"},
+	{0, NULL}
+};
+consvar_t cons_menuhighlight = CVAR_INIT ("con_menuhighlight", "Always Yellow", CV_SAVE, menuhighlight_cons_t, NULL);
+
+
 static void CON_Print(char *msg);
 
 //
@@ -470,6 +492,7 @@ void CON_Init(void)
 		CV_RegisterVar(&cons_height);
 		CV_RegisterVar(&cons_backpic);
 		CV_RegisterVar(&cons_backcolor);
+		CV_RegisterVar(&cons_menuhighlight);
 		COM_AddCommand("bind", CONS_Bind_f);
 	}
 	else

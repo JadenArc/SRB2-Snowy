@@ -94,6 +94,8 @@ typedef enum
 
 	MN_OP_PLAYSTYLE,
 
+	MN_OP_HUD,
+
 	MN_OP_VIDEO,
 	MN_OP_VIDEOMODE,
 	MN_OP_COLOR,
@@ -432,6 +434,8 @@ typedef struct
 } saveinfo_t;
 
 extern description_t description[MAXSKINS];
+
+extern INT32 highlightflags, recommendedflags, warningflags;
 
 extern consvar_t cv_showfocuslost;
 extern consvar_t cv_newgametype, cv_nextmap, cv_chooseskin, cv_serversort;

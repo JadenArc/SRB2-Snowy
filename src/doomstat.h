@@ -687,6 +687,7 @@ extern boolean singletics;
 
 extern consvar_t cv_timetic; // display high resolution timer
 extern consvar_t cv_powerupdisplay; // display powerups
+extern consvar_t cv_showinput; // display the input if enabled
 extern consvar_t cv_showinputjoy; // display joystick in time attack
 extern consvar_t cv_forceskin; // force clients to use the server's skin
 extern consvar_t cv_downloading; // allow clients to downloading WADs.

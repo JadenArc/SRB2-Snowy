@@ -4797,6 +4797,8 @@ const char *const MENUTYPES_LIST[] = {
 
 	"OP_PLAYSTYLE",
 
+	"OP_HUD",
+
 	"OP_VIDEO",
 	"OP_VIDEOMODE",
 	"OP_COLOR",
