@@ -797,12 +797,22 @@ static void ST_drawLivesArea(void)
 	if (F_GetPromptHideHud(hudinfo[HUD_LIVES].y))
 		return;
 
-	// face background
-	V_DrawSmallScaledPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y,
-		hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, livesback);
+	// dont draw this if you dont exist! (or on ringslinger)
+	if ((stplyr->mo) && !(G_RingSlingerGametype()))
+	{
+		// face background
+		V_DrawSmallScaledPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y,
+			hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, livesback);
+
+		// player patch
+		patch_t *face = (stplyr->powers[pw_super] && !(stplyr->charflags & SF_NOSUPERSPRITES)) ? superprefix[stplyr->skin] : faceprefix[stplyr->skin];
+
+		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, stplyr->mo->color, GTC_CACHE);
+		V_DrawSmallMappedPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, face, colormap);
+	}
 
 	// face
-	if (stplyr->spectator)
+	/*if (stplyr->spectator)
 	{
 		// spectator face
 		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, SKINCOLOR_CLOUDY, GTC_CACHE);
@@ -836,7 +846,7 @@ static void ST_drawLivesArea(void)
 		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, stplyr->skincolor, GTC_CACHE);
 		V_DrawSmallMappedPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y,
 			hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, faceprefix[stplyr->skin], colormap);
-	}
+	}*/
 
 	// Metal Sonic recording
 	if (metalrecording)
@@ -845,9 +855,11 @@ static void ST_drawLivesArea(void)
 			V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
 				hudinfo[HUD_LIVES].f|V_PERPLAYER|V_REDMAP|V_HUDTRANS, "REC");
 	}
-	// Spectator
+	
+	/*// Spectator
 	else if (stplyr->spectator)
 		v_colmap = V_GRAYMAP;
+	
 	// Tag
 	else if (gametyperules & GTR_TAG)
 	{
@@ -857,6 +869,7 @@ static void ST_drawLivesArea(void)
 			v_colmap = V_ORANGEMAP;
 		}
 	}
+	
 	// Team name
 	else if (G_GametypeHasTeams())
 	{
@@ -870,7 +883,8 @@ static void ST_drawLivesArea(void)
 			V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8, V_HUDTRANS|hudinfo[HUD_LIVES].f|V_PERPLAYER, "BLUE");
 			v_colmap = V_BLUEMAP;
 		}
-	}
+	}*/
+	
 	// Lives number
 	else
 	{
@@ -911,12 +925,14 @@ static void ST_drawLivesArea(void)
 				notgreyedout = true;
 			}
 		}
+		
 		// Infinity symbol (Race)
 		else if (G_PlatformGametype() && !(gametyperules & GTR_LIVES))
 		{
 			livescount = INFLIVES;
 			notgreyedout = true;
 		}
+		
 		// Otherwise nothing, sorry.
 		// Special Stages keep not showing lives,
 		// as G_GametypeUsesLives() returns false in
@@ -932,6 +948,7 @@ static void ST_drawLivesArea(void)
 		{
 			// x
 			V_DrawScaledPatch(hudinfo[HUD_LIVES].x+22, hudinfo[HUD_LIVES].y+10, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, stlivex);
+			
 			if (livescount == INFLIVES)
 				V_DrawCharacter(hudinfo[HUD_LIVES].x+50, hudinfo[HUD_LIVES].y+8,
 					'\x16' | 0x80 | hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, false);
@@ -939,46 +956,49 @@ static void ST_drawLivesArea(void)
 			{
 				if (stplyr->playerstate == PST_DEAD && !(stplyr->spectator) && (livescount || stplyr->deadtimer < (TICRATE<<1)) && !(stplyr->pflags & PF_FINISHED))
 					livescount++;
+				
 				if (livescount > 99)
 					livescount = 99;
+				
 				V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
-					hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d",livescount));
+					hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d", livescount));
 			}
 		}
-#undef ST_drawLivesX
 	}
 
 	// name
-	v_colmap |= (V_HUDTRANS|hudinfo[HUD_LIVES].f|V_PERPLAYER);
-	if (strlen(skins[stplyr->skin].hudname) <= 5)
-		V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
-	else if (V_StringWidth(skins[stplyr->skin].hudname, v_colmap) <= 48)
-		V_DrawString(hudinfo[HUD_LIVES].x+18, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
-	else if (V_ThinStringWidth(skins[stplyr->skin].hudname, v_colmap) <= 40)
-		V_DrawRightAlignedThinString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
-	else
-		V_DrawThinString(hudinfo[HUD_LIVES].x+18, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
+	v_colmap |= (hudinfo[HUD_LIVES].f|V_HUDTRANS|V_PERPLAYER);
+
+	if ((stplyr->mo) && !(G_RingSlingerGametype()))
+	{
+		if (strlen(skins[stplyr->skin].hudname) <= 5)
+			V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
+
+		else if (V_StringWidth(skins[stplyr->skin].hudname, v_colmap) <= 48)
+			V_DrawString(hudinfo[HUD_LIVES].x+18, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
+
+		else if (V_ThinStringWidth(skins[stplyr->skin].hudname, v_colmap) <= 40)
+			V_DrawRightAlignedThinString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
+
+		else
+			V_DrawThinString(hudinfo[HUD_LIVES].x+18, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
+	}
 
 	// Power Stones collected
 	if (G_RingSlingerGametype() && LUA_HudEnabled(hud_powerstones))
 	{
-		INT32 workx = hudinfo[HUD_LIVES].x+1, j;
-		if ((leveltime & 1) && stplyr->powers[pw_invulnerability] && (stplyr->powers[pw_sneakers] == stplyr->powers[pw_invulnerability])) // hack; extremely unlikely to be activated unintentionally
+		INT32 j;
+
+		for (j = 0; j < 7; ++j)
 		{
-			for (j = 0; j < 7; ++j) // "super" indicator
-			{
-				V_DrawScaledPatch(workx, hudinfo[HUD_LIVES].y-9, V_HUDTRANS|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
-				workx += 8;
-			}
-		}
-		else
-		{
-			for (j = 0; j < 7; ++j) // powerstones
-			{
-				if (stplyr->powers[pw_emeralds] & (1 << j))
-					V_DrawScaledPatch(workx, hudinfo[HUD_LIVES].y-9, V_HUDTRANS|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
-				workx += 8;
-			}
+			UINT32 flags = V_HUDTRANSHALF;
+			INT32 x = hudinfo[HUD_LIVES].x + (9 * j);
+			INT32 y = hudinfo[HUD_LIVES].y + 5;
+			
+			if ((stplyr->powers[pw_emeralds] & (1 << j)) || ((leveltime & 1) && stplyr->powers[pw_invulnerability] && (stplyr->powers[pw_sneakers] == stplyr->powers[pw_invulnerability])))
+				flags = V_HUDTRANS;
+			
+			V_DrawScaledPatch(x, y, flags|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
 		}
 	}
 }
@@ -2175,7 +2195,7 @@ static void ST_drawWeaponRing(powertype_t weapon, INT32 rwflag, INT32 wepflag, I
 static void ST_drawMatchHUD(void)
 {
 	char penaltystr[7];
-	const INT32 y = 176; // HUD_LIVES
+	const INT32 y = 178; 
 	INT32 offset = (BASEVIDWIDTH / 2) - (NUM_WEAPONS * 10) - 6;
 
 	if (F_GetPromptHideHud(y))
