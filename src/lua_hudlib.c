@@ -45,7 +45,6 @@ static const char *const hud_disable_options[] = {
 	"time",
 	"rings",
 	"lives",
-	"input",
 
 	"weaponrings",
 	"powerstones",

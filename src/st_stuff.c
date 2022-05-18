@@ -993,10 +993,15 @@ static void ST_drawInput(void)
 	UINT8 offs;
 
 	INT32 x = hudinfo[HUD_LIVES].x;
-	INT32 y = hudinfo[HUD_LIVES].y - ((modeattacking) ? 0 : 22);
+	INT32 y = hudinfo[HUD_LIVES].y;
 
-	if (stplyr->powers[pw_carry] == CR_NIGHTSMODE)
-		y -= (modeattacking) ? 16 : 8;
+	// offset the height if we arent on record attack,
+	if (!modeattacking)
+		y -= 22;
+	
+	// or if we are on nights.
+	else if (stplyr->powers[pw_carry] == CR_NIGHTSMODE)
+		y -= 16;
 
 	if (F_GetPromptHideHud(y))
 		return;
@@ -2633,9 +2638,6 @@ static void ST_overlayDrawer(void)
 			if (LUA_HudEnabled(hud_rings))
 				ST_drawRings();
 
-			if (!demoplayback && LUA_HudEnabled(hud_input))
-				ST_drawInput();
-
 			if (!modeattacking && LUA_HudEnabled(hud_lives))
 				ST_drawLivesArea();
 		}
@@ -2758,6 +2760,10 @@ static void ST_overlayDrawer(void)
 	}
 	else if (!(netgame || multiplayer) && cv_powerupdisplay.value == 2)
 		ST_drawPowerupHUD(); // same as it ever was...
+
+	// draw the input!
+	if (!(hu_showscores && demoplayback || chat_on))
+		ST_drawInput();
 
 	if (!(netgame || multiplayer) || !hu_showscores)
 		LUA_HUDHOOK(game);
