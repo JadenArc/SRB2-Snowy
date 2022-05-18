@@ -2762,8 +2762,9 @@ static void ST_overlayDrawer(void)
 		ST_drawPowerupHUD(); // same as it ever was...
 
 	// draw the input!
-	if (!(hu_showscores && demoplayback || chat_on))
-		ST_drawInput();
+	if (!hu_showscores)
+		if (!(demoplayback || chat_on))
+			ST_drawInput();
 
 	if (!(netgame || multiplayer) || !hu_showscores)
 		LUA_HUDHOOK(game);
