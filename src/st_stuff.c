@@ -995,10 +995,13 @@ static void ST_drawLivesArea(void)
 			INT32 x = hudinfo[HUD_LIVES].x + (9 * j);
 			INT32 y = hudinfo[HUD_LIVES].y + 5;
 			
-			if ((stplyr->powers[pw_emeralds] & (1 << j)) || ((leveltime & 1) && stplyr->powers[pw_invulnerability] && (stplyr->powers[pw_sneakers] == stplyr->powers[pw_invulnerability])))
-				flags = V_HUDTRANS;
-			
-			V_DrawScaledPatch(x, y, flags|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
+			if (!stplyr->spectator)
+			{
+				if ((stplyr->powers[pw_emeralds] & (1 << j)) || ((leveltime & 1) && stplyr->powers[pw_invulnerability] && (stplyr->powers[pw_sneakers] == stplyr->powers[pw_invulnerability])))
+					flags = V_HUDTRANS;
+				
+				V_DrawScaledPatch(x, y, flags|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
+			}
 		}
 	}
 }
@@ -1017,8 +1020,8 @@ static void ST_drawInput(void)
 	INT32 col;
 	UINT8 offs;
 
-	// offset the height if we arent on record attack,
-	if (!modeattacking)
+	// offset the height if we arent on record attack, or if we are not a spectator.
+	if (!(modeattacking || stplyr->spectator))
 		y -= 22;
 	
 	// or if we are on nights.
@@ -1034,10 +1037,6 @@ static void ST_drawInput(void)
 
 	if (cv_showinputjoy.value) // joystick render!
 	{
-		/*V_DrawFill(x   , y   , 16,  1, hudinfo[HUD_LIVES].f|16);
-		V_DrawFill(x   , y+15, 16,  1, hudinfo[HUD_LIVES].f|16);
-		V_DrawFill(x   , y+ 1,  1, 14, hudinfo[HUD_LIVES].f|16);
-		V_DrawFill(x+15, y+ 1,  1, 14, hudinfo[HUD_LIVES].f|16); -- red's outline*/
 		if (stplyr->cmd.sidemove || stplyr->cmd.forwardmove)
 		{
 			// joystick hole
@@ -1134,7 +1133,7 @@ static void ST_drawInput(void)
 		V_DrawFill(x+ 7, y+10-offs,  2,  1, col);
 	}
 
-#define drawbutt(xoffs, yoffs, butt, symb)\
+#define DrawButton(xoffs, yoffs, butt, symb)\
 	if (stplyr->cmd.buttons & butt)\
 	{\
 		offs = 0;\
@@ -1149,8 +1148,8 @@ static void ST_drawInput(void)
 	V_DrawFill(x+16+(xoffs), y+(yoffs)-offs, 10, 10, col);\
 	V_DrawCharacter(x+16+1+(xoffs), y+1+(yoffs)-offs, flags|symb, false)
 
-	drawbutt( 4,-3, BT_JUMP, 'J');
-	drawbutt(15,-3, BT_SPIN, 'S');
+	DrawButton( 4, -3, BT_JUMP, 'J');
+	DrawButton(15, -3, BT_SPIN, 'S');
 
 	V_DrawFill(x+16+4, y+8, 21, 10, flags|20); // sundial backing
 	if (stplyr->mo)
@@ -1178,8 +1177,6 @@ static void ST_drawInput(void)
 		if (ycomp <= 0)
 			V_DrawFill(x+16+13-xcomp, y+11-ycomp, 3, 3, accent); // point (in front)
 	}
-
-#undef drawbutt
 
 	// draw this only in record attack!
 	if (modeattacking)
@@ -1232,6 +1229,8 @@ static void ST_drawInput(void)
 			V_DrawThinString(x, y, flags|((leveltime & 4) ? V_YELLOWMAP : V_REDMAP), "BAD DEMO!!");
 	}
 }
+
+#undef DrawButton
 
 static patch_t *lt_patches[3];
 static INT32 lt_scroll = 0;
@@ -2404,7 +2403,7 @@ static inline void ST_drawRaceHUD(void)
 
 static void ST_drawTeamHUD(void)
 {
-#define SEP 20
+	INT32 SEP = 20;
 
 	if (F_GetPromptHideHud(0)) // y base is 0
 		return;
@@ -2437,13 +2436,16 @@ static void ST_drawTeamHUD(void)
 		// Show which flags aren't at base.
 		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			// Blue flag isn't at base
-			if (players[i].gotflag & GF_BLUEFLAG && LUA_HudEnabled(hud_teamscores))
-				V_DrawScaledPatch(BASEVIDWIDTH/2 - SEP - (nonicon->width / 2), 0, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, nonicon);
+			if (LUA_HudEnabled(hud_teamscores))
+			{
+				// Blue flag isn't at base
+				if (players[i].gotflag & GF_BLUEFLAG)
+					V_DrawScaledPatch(BASEVIDWIDTH/2 - SEP - (nonicon->width / 2), 0, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, nonicon);
 
-			// Red flag isn't at base
-			if (players[i].gotflag & GF_REDFLAG && LUA_HudEnabled(hud_teamscores))
-				V_DrawScaledPatch(BASEVIDWIDTH/2 + SEP - (nonicon2->width / 2), 0, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, nonicon2);
+				// Red flag isn't at base
+				if (players[i].gotflag & GF_REDFLAG)
+					V_DrawScaledPatch(BASEVIDWIDTH/2 + SEP - (nonicon2->width / 2), 0, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, nonicon2);
+			}
 
 			whichflag |= players[i].gotflag;
 
@@ -2453,22 +2455,23 @@ static void ST_drawTeamHUD(void)
 
 		// Display a countdown timer showing how much time left until the flag returns to base.
 		{
-			if (blueflag && blueflag->fuse > 1 && LUA_HudEnabled(hud_teamscores))
-				V_DrawCenteredString(BASEVIDWIDTH/2 - SEP, 8, V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", (blueflag->fuse / TICRATE)));
+			if (LUA_HudEnabled(hud_teamscores))
+			{
+				if (blueflag && blueflag->fuse > 1)
+					V_DrawCenteredString(BASEVIDWIDTH/2 - SEP, 8, V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", (blueflag->fuse / TICRATE)));
 
-			if (redflag && redflag->fuse > 1 && LUA_HudEnabled(hud_teamscores))
-				V_DrawCenteredString(BASEVIDWIDTH/2 + SEP, 8, V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", (redflag->fuse / TICRATE)));
+				if (redflag && redflag->fuse > 1)
+					V_DrawCenteredString(BASEVIDWIDTH/2 + SEP, 8, V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", (redflag->fuse / TICRATE)));
+			}
 		}
 	}
 
 num:
 	if (LUA_HudEnabled(hud_teamscores))
+	{
 		V_DrawCenteredString(BASEVIDWIDTH/2 - SEP, 16, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", bluescore));
-
-	if (LUA_HudEnabled(hud_teamscores))
 		V_DrawCenteredString(BASEVIDWIDTH/2 + SEP, 16, V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP, va("%u", redscore));
-
-#undef SEP
+	}
 }
 
 /*static void ST_drawSpecialStageHUD(void)

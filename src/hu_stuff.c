@@ -2617,15 +2617,14 @@ static void JH_DrawTeamRankings(playersort_t *tab, INT32 whiteplayer)
 		// draw youre ping
 		HU_drawPing(x - 11, y, players[tab[i].num].quittime ? UINT32_MAX : playerpingtable[tab[i].num], true, 0);
 
-		// Red flag.
-		INT32 x1 = ((x + 4) + rightoffset);
-		
+		// Red flag and the blue flag.
+		INT32 x1 = ((x + 2) + rightoffset);
+
 		if (players[tab[i].num].gotflag & GF_REDFLAG)
-			V_DrawSmallScaledPatch(x1, y-3, flags, rflagico);
+			V_DrawFixedPatch(x1*FRACUNIT, (y-3)*FRACUNIT, FRACUNIT/4, flags, rflagico, NULL);
 		
-		// Blue flag.
 		else if (players[tab[i].num].gotflag & GF_BLUEFLAG)
-			V_DrawSmallScaledPatch(x1, y-3, flags, bflagico);
+			V_DrawFixedPatch(x1*FRACUNIT, (y-3)*FRACUNIT, FRACUNIT/4, flags, bflagico, NULL);
 	}
 
 	J_LoadBasicScoreboard();
