@@ -2182,7 +2182,7 @@ static void ST_drawWeaponRing(powertype_t weapon, INT32 rwflag, INT32 wepflag, I
 		}
 
 		V_DrawScaledPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|patflags, pat);
-		V_DrawRightAlignedThinString(24 + xoffs, y + 8, V_PERPLAYER|V_SNAPTOBOTTOM|txtflags, va("%d", stplyr->powers[weapon]));
+		V_DrawCenteredThinString(16 + xoffs, y + 8, V_PERPLAYER|V_SNAPTOBOTTOM|txtflags, va("%d", stplyr->powers[weapon]));
 
 		if (stplyr->currentweapon == wepflag)
 			ST_drawWeaponSelect(xoffs, y);
@@ -2195,7 +2195,7 @@ static void ST_drawMatchHUD(void)
 {
 	char penaltystr[7];
 	const INT32 y = 178; 
-	INT32 offset = (BASEVIDWIDTH / 2) - (NUM_WEAPONS * 10) - 6;
+	INT32 offset = 16 + (NUM_WEAPONS * 10) - 6;
 
 	if (F_GetPromptHideHud(y))
 		return;
