@@ -1020,7 +1020,7 @@ static void ST_drawInput(void)
 	INT32 col;
 	UINT8 offs;
 
-	// offset the height if we arent on record attack, or if we are not a spectator.
+	// offset the height if we arent on record attack, or if we are a spectator.
 	if (!(modeattacking || stplyr->spectator))
 		y -= 22;
 	
@@ -2144,6 +2144,8 @@ static void ST_drawNiGHTSHUD(void)
 static void ST_drawWeaponSelect(INT32 xoffs, INT32 y)
 {
 	INT32 q = stplyr->weapondelay, del = 0, p = 16;
+	UINT32 alpha = min(max(1, q), 7) << V_ALPHASHIFT;
+	
 	while (q)
 	{
 		if (q > p)
@@ -2160,42 +2162,42 @@ static void ST_drawWeaponSelect(INT32 xoffs, INT32 y)
 			break;
 		}
 	}
-	V_DrawScaledPatch(6 + xoffs, y-2 - del/2, V_PERPLAYER|V_SNAPTOBOTTOM, curweapon);
+	
+	V_DrawScaledPatch(6 + xoffs, y-2 - (del/2), V_PERPLAYER|V_SNAPTOBOTTOM|alpha, curweapon);
 }
 
-static void ST_drawWeaponRing(powertype_t weapon, INT32 rwflag, INT32 wepflag, INT32 xoffs, INT32 y, patch_t *pat)
+static void ST_drawWeaponRing(INT32 xoffs, INT32 y, powertype_t weapon, INT32 rwflag, INT32 wepflag, patch_t *pat)
 {
-	INT32 txtflags = 0, patflags = 0;
+	UINT32 txtflags = 0, patflags = 0;
 
-	if (stplyr->powers[weapon])
+	if (stplyr->powers[weapon] >= rw_maximums[wepflag])
+		txtflags |= V_YELLOWMAP;
+
+	if (stplyr->ringweapons & rwflag)
 	{
-		if (stplyr->powers[weapon] >= rw_maximums[wepflag])
-			txtflags |= V_YELLOWMAP;
+		txtflags = 0;
+		patflags = 0;
+	}
+	else
+	{
+		txtflags |= V_TRANSLUCENT;
+		patflags = V_60TRANS;
+	}
 
-		if (weapon == pw_infinityring
-		|| (stplyr->ringweapons & rwflag))
-			; //txtflags |= V_20TRANS;
-		else
-		{
-			txtflags |= V_TRANSLUCENT;
-			patflags =  V_80TRANS;
-		}
+	V_DrawTranslucentPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|patflags, pat);
 
-		V_DrawScaledPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|patflags, pat);
+	if((stplyr->ringweapons & rwflag) || (stplyr->powers[weapon]))
 		V_DrawCenteredThinString(16 + xoffs, y + 8, V_PERPLAYER|V_SNAPTOBOTTOM|txtflags, va("%d", stplyr->powers[weapon]));
 
-		if (stplyr->currentweapon == wepflag)
-			ST_drawWeaponSelect(xoffs, y);
-	}
-	else if (stplyr->ringweapons & rwflag)
-		V_DrawScaledPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|V_TRANSLUCENT, pat);
+	if (stplyr->currentweapon == wepflag)
+		ST_drawWeaponSelect(xoffs, y);
 }
 
 static void ST_drawMatchHUD(void)
 {
 	char penaltystr[7];
 	const INT32 y = 178; 
-	INT32 offset = 16 + (NUM_WEAPONS * 10) - 6;
+	INT32 offset = 14 + (NUM_WEAPONS * 10);
 
 	if (F_GetPromptHideHud(y))
 		return;
@@ -2208,30 +2210,31 @@ static void ST_drawMatchHUD(void)
 
 	{
 		if (stplyr->powers[pw_infinityring])
-			ST_drawWeaponRing(pw_infinityring, 0, 0, offset, y, infinityring);
+			ST_drawWeaponRing(offset, y, pw_infinityring, 0, 0, infinityring);
 		else
 		{
 			if (stplyr->rings > 0)
 				V_DrawScaledPatch(8 + offset, y, V_PERPLAYER|V_SNAPTOBOTTOM, normring);
 			else
-				V_DrawTranslucentPatch(8 + offset, y, V_PERPLAYER|V_SNAPTOBOTTOM|V_80TRANS, normring);
+				V_DrawTranslucentPatch(8 + offset, y, V_PERPLAYER|V_SNAPTOBOTTOM|V_40TRANS, normring);
 
 			if (!stplyr->currentweapon)
 				ST_drawWeaponSelect(offset, y);
 		}
 
-		ST_drawWeaponRing(pw_automaticring, RW_AUTO, WEP_AUTO, offset + 20, y, autoring);
-		ST_drawWeaponRing(pw_bouncering, RW_BOUNCE, WEP_BOUNCE, offset + 40, y, bouncering);
-		ST_drawWeaponRing(pw_scatterring, RW_SCATTER, WEP_SCATTER, offset + 60, y, scatterring);
-		ST_drawWeaponRing(pw_grenadering, RW_GRENADE, WEP_GRENADE, offset + 80, y, grenadering);
-		ST_drawWeaponRing(pw_explosionring, RW_EXPLODE, WEP_EXPLODE, offset + 100, y, explosionring);
-		ST_drawWeaponRing(pw_railring, RW_RAIL, WEP_RAIL, offset + 120, y, railring);
+		ST_drawWeaponRing(offset + 20,  y, pw_automaticring, RW_AUTO, 	 WEP_AUTO, 	  autoring);
+		ST_drawWeaponRing(offset + 40,  y, pw_bouncering, 	 RW_BOUNCE,  WEP_BOUNCE,  bouncering);
+		ST_drawWeaponRing(offset + 60,  y, pw_scatterring, 	 RW_SCATTER, WEP_SCATTER, scatterring);
+		ST_drawWeaponRing(offset + 80,  y, pw_grenadering, 	 RW_GRENADE, WEP_GRENADE, grenadering);
+		ST_drawWeaponRing(offset + 100, y, pw_explosionring, RW_EXPLODE, WEP_EXPLODE, explosionring);
+		ST_drawWeaponRing(offset + 120, y, pw_railring,		 RW_RAIL, 	 WEP_RAIL, 	  railring);
 
 		if (stplyr->ammoremovaltimer && leveltime % 8 < 4)
 		{
+			INT32 x = stplyr->ammoremovalweapon * 20;
+
 			sprintf(penaltystr, "-%d", stplyr->ammoremoval);
-			V_DrawString(offset + 8 + stplyr->ammoremovalweapon * 20, y,
-				V_REDMAP|V_SNAPTOBOTTOM|V_PERPLAYER, penaltystr);
+			V_DrawString(x + (offset + 8), y, V_REDMAP|V_SNAPTOBOTTOM|V_PERPLAYER, penaltystr);
 		}
 
 	}
