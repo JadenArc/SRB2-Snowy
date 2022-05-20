@@ -798,7 +798,7 @@ static void ST_drawLivesArea(void)
 		return;
 
 	// dont draw this if you dont exist! (or on ringslinger)
-	if ((stplyr->mo) && !(G_RingSlingerGametype()))
+	if (!(stplyr->spectator) && !(G_RingSlingerGametype()))
 	{
 		// face background
 		V_DrawSmallScaledPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y,
@@ -807,7 +807,7 @@ static void ST_drawLivesArea(void)
 		// player patch
 		patch_t *face = (stplyr->powers[pw_super] && !(stplyr->charflags & SF_NOSUPERSPRITES)) ? superprefix[stplyr->skin] : faceprefix[stplyr->skin];
 
-		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, stplyr->mo->color, GTC_CACHE);
+		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, (stplyr->mo ? stplyr->mo->color : stplyr->skincolor), GTC_CACHE);
 		V_DrawSmallMappedPatch(hudinfo[HUD_LIVES].x, hudinfo[HUD_LIVES].y, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, face, colormap);
 	}
 
@@ -888,80 +888,83 @@ static void ST_drawLivesArea(void)
 	// Lives number
 	else
 	{
-		boolean candrawlives = true;
-
-		// Co-op and Competition, normal life counter
-		if (G_GametypeUsesLives())
+		if (!(stplyr->spectator)) // meh.
 		{
-			// Handle cooplives here
-			if ((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 3)
+			boolean candrawlives = true;
+
+			// Co-op and Competition, normal life counter
+			if (G_GametypeUsesLives())
 			{
-				INT32 i;
-				livescount = 0;
-				notgreyedout = (stplyr->lives > 0);
-				for (i = 0; i < MAXPLAYERS; i++)
+				// Handle cooplives here
+				if ((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 3)
 				{
-					if (!playeringame[i])
-						continue;
-
-					if (players[i].lives < 1)
-						continue;
-
-					if (players[i].lives > 1)
-						notgreyedout = true;
-
-					if (players[i].lives == INFLIVES)
+					INT32 i;
+					livescount = 0;
+					notgreyedout = (stplyr->lives > 0);
+					for (i = 0; i < MAXPLAYERS; i++)
 					{
-						livescount = INFLIVES;
-						break;
+						if (!playeringame[i])
+							continue;
+
+						if (players[i].lives < 1)
+							continue;
+
+						if (players[i].lives > 1)
+							notgreyedout = true;
+
+						if (players[i].lives == INFLIVES)
+						{
+							livescount = INFLIVES;
+							break;
+						}
+						else if (livescount < 99)
+							livescount += (players[i].lives);
 					}
-					else if (livescount < 99)
-						livescount += (players[i].lives);
+				}
+				else
+				{
+					livescount = (((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 0) ? INFLIVES : stplyr->lives);
+					notgreyedout = true;
 				}
 			}
-			else
+			
+			// Infinity symbol (Race)
+			else if (G_PlatformGametype() && !(gametyperules & GTR_LIVES))
 			{
-				livescount = (((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 0) ? INFLIVES : stplyr->lives);
+				livescount = INFLIVES;
 				notgreyedout = true;
 			}
-		}
-		
-		// Infinity symbol (Race)
-		else if (G_PlatformGametype() && !(gametyperules & GTR_LIVES))
-		{
-			livescount = INFLIVES;
-			notgreyedout = true;
-		}
-		
-		// Otherwise nothing, sorry.
-		// Special Stages keep not showing lives,
-		// as G_GametypeUsesLives() returns false in
-		// Special Stages, and the infinity symbol
-		// cannot show up because Special Stages
-		// still have the GTR_LIVES gametype rule
-		// by default.
-		else
-			candrawlives = false;
-
-		// Draw the lives counter here.
-		if (candrawlives)
-		{
-			// x
-			V_DrawScaledPatch(hudinfo[HUD_LIVES].x+22, hudinfo[HUD_LIVES].y+10, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, stlivex);
 			
-			if (livescount == INFLIVES)
-				V_DrawCharacter(hudinfo[HUD_LIVES].x+50, hudinfo[HUD_LIVES].y+8,
-					'\x16' | 0x80 | hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, false);
+			// Otherwise nothing, sorry.
+			// Special Stages keep not showing lives,
+			// as G_GametypeUsesLives() returns false in
+			// Special Stages, and the infinity symbol
+			// cannot show up because Special Stages
+			// still have the GTR_LIVES gametype rule
+			// by default.
 			else
+				candrawlives = false;
+
+			// Draw the lives counter here.
+			if (candrawlives)
 			{
-				if (stplyr->playerstate == PST_DEAD && !(stplyr->spectator) && (livescount || stplyr->deadtimer < (TICRATE<<1)) && !(stplyr->pflags & PF_FINISHED))
-					livescount++;
+				// x
+				V_DrawScaledPatch(hudinfo[HUD_LIVES].x+22, hudinfo[HUD_LIVES].y+10, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, stlivex);
 				
-				if (livescount > 99)
-					livescount = 99;
-				
-				V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
-					hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d", livescount));
+				if (livescount == INFLIVES)
+					V_DrawCharacter(hudinfo[HUD_LIVES].x+50, hudinfo[HUD_LIVES].y+8,
+						'\x16' | 0x80 | hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, false);
+				else
+				{
+					if (stplyr->playerstate == PST_DEAD && !(stplyr->spectator) && (livescount || stplyr->deadtimer < (TICRATE<<1)) && !(stplyr->pflags & PF_FINISHED))
+						livescount++;
+					
+					if (livescount > 99)
+						livescount = 99;
+					
+					V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
+						hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d", livescount));
+				}
 			}
 		}
 	}
@@ -969,7 +972,7 @@ static void ST_drawLivesArea(void)
 	// name
 	v_colmap |= (hudinfo[HUD_LIVES].f|V_HUDTRANS|V_PERPLAYER);
 
-	if ((stplyr->mo) && !(G_RingSlingerGametype()))
+	if (!(stplyr->spectator) && !(G_RingSlingerGametype()))
 	{
 		if (strlen(skins[stplyr->skin].hudname) <= 5)
 			V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y, v_colmap, skins[stplyr->skin].hudname);
