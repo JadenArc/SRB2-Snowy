@@ -725,37 +725,42 @@ void Y_IntermissionDrawer(void)
 	{
 		INT32 j = 0;
 		INT32 x = 4;
-		INT32 y = 48;
+		INT32 y = 32;
+		INT32 dupadjust = (vid.width/vid.dupx), duptweak = (dupadjust - BASEVIDWIDTH)/2;
+
 		char name[MAXPLAYERNAME+1];
 		char strtime[10];
 
 		// draw the header
-		V_DrawScaledPatch(112, 2, 0, data.match.result);
+		V_DrawScaledPatch(160 - (data.match.result->width/2), 2, 0, data.match.result);
 
 		// draw the level name
-		V_DrawCenteredString(BASEVIDWIDTH/2, 20, 0, data.match.levelstring);
-		V_DrawFill(4, 42, 312, 1, 0);
-
+		//V_DrawCenteredThinString(BASEVIDWIDTH/2, 20, 0, data.match.levelstring);
+		
+		// lines!
+		V_DrawFill(1 - duptweak,  26, dupadjust - 2, 1, 0); // Draw a horizontal line because it looks nice!
+		V_DrawFill(1 - duptweak, 182, dupadjust - 2, 1, 0); // And a horizontal line near the bottom.
+		
 		if (data.match.numplayers > 9)
 		{
-			V_DrawFill(160, 32, 1, 152, 0);
+			V_DrawFill(160, 26, 1, 156, 0);
 
 			if (intertype == int_race)
-				V_DrawRightAlignedString(x+152, 32, highlightflags, "TIME");
+				V_DrawRightAlignedString(x+152, 17, highlightflags, "TIME");
 			else
-				V_DrawRightAlignedString(x+152, 32, highlightflags, "SCORE");
+				V_DrawRightAlignedString(x+152, 17, highlightflags, "SCORE");
 
-			V_DrawCenteredString(x+(BASEVIDWIDTH/2)+6, 32, highlightflags, "#");
-			V_DrawString(x+(BASEVIDWIDTH/2)+36, 32, highlightflags, "NAME");
+			V_DrawCenteredString(x + (BASEVIDWIDTH/2) + 6, 17, highlightflags, "#");
+			V_DrawString(x + (BASEVIDWIDTH/2) + 36, 17, highlightflags, "NAME");
 		}
 
-		V_DrawCenteredString(x+6, 32, highlightflags, "#");
-		V_DrawString(x+36, 32, highlightflags, "NAME");
+		V_DrawCenteredString(x+6, 17, highlightflags, "#");
+		V_DrawString(x+36, 17, highlightflags, "NAME");
 
 		if (intertype == int_race)
-			V_DrawRightAlignedString(x+(BASEVIDWIDTH/2)+152, 32, highlightflags, "TIME");
+			V_DrawRightAlignedString(x + (BASEVIDWIDTH/2)+152, 17, highlightflags, "TIME");
 		else
-			V_DrawRightAlignedString(x+(BASEVIDWIDTH/2)+152, 32, highlightflags, "SCORE");
+			V_DrawRightAlignedString(x + (BASEVIDWIDTH/2)+152, 17, highlightflags, "SCORE");
 
 		for (i = 0; i < data.match.numplayers; i++)
 		{
@@ -778,14 +783,17 @@ void Y_IntermissionDrawer(void)
 					V_DrawSmallMappedPatch(x+16, y-4, 0,faceprefix[*data.match.character[i]], colormap);
 				}
 
+				// cut the players name...
 				if (data.match.numplayers > 9)
-				{
 					strlcpy(name, data.match.name[i], 15);
-				}
 				else
 					STRBUFCPY(name, data.match.name[i]);
 
-				V_DrawThinString(x+36, y, V_ALLOWLOWERCASE, name);
+				// and draw it!
+				if (data.match.numplayers > 9)
+					V_DrawThinString(x+36, y, V_ALLOWLOWERCASE, name);
+				else
+					V_DrawString(x+36, y, V_ALLOWLOWERCASE, name);
 
 				if (data.match.numplayers > 9)
 				{
@@ -824,11 +832,11 @@ void Y_IntermissionDrawer(void)
 				}
 			}
 
-			y += 16;
+			y += 17;
 
-			if (y > 176)
+			if (i == 8)
 			{
-				y = 48;
+				y = 32;
 				x += BASEVIDWIDTH/2;
 			}
 		}
@@ -837,31 +845,34 @@ void Y_IntermissionDrawer(void)
 	{
 		INT32 x = 4, y = 0;
 		INT32 redplayers = 0, blueplayers = 0;
+		INT32 dupadjust = (vid.width/vid.dupx), duptweak = (dupadjust - BASEVIDWIDTH)/2;
+
 		char name[MAXPLAYERNAME+1];
 
 		// Show the team flags and the team score at the top instead of "RESULTS"
-		V_DrawSmallScaledPatch(128 - (data.match.blueflag->width / 4), 2, 0, data.match.blueflag);
-		V_DrawCenteredString(128, 16, 0, va("%u", bluescore));
+		V_DrawSmallScaledPatch(4, 1, 0, data.match.blueflag);
+		V_DrawString(31, 5, 0, va("%u", bluescore));
 
-		V_DrawSmallScaledPatch(192 - (data.match.redflag->width / 4), 2, 0, data.match.redflag);
-		V_DrawCenteredString(192, 16, 0, va("%u", redscore));
+		V_DrawSmallScaledPatch(BASEVIDWIDTH+19 - (data.match.redflag->width), 1, 0, data.match.redflag);
+		V_DrawRightAlignedString(BASEVIDWIDTH-31, 5, 0, va("%u", redscore));
 
 		// draw the level name
-		V_DrawCenteredString(BASEVIDWIDTH/2, 24, 0, data.match.levelstring);
-		V_DrawFill(4, 42, 312, 1, 0);
-
-		//vert. line
-		V_DrawFill(160, 32, 1, 152, 0);
+		//V_DrawCenteredString(BASEVIDWIDTH/2, 24, 0, data.match.levelstring);
+		
+		// lines!
+		V_DrawFill(1 - duptweak,  26, dupadjust - 2, 1, 0); // Draw a horizontal line because it looks nice!
+		V_DrawFill(1 - duptweak, 182, dupadjust - 2, 1, 0); // And a horizontal line near the bottom.
+		V_DrawFill(160, 26, 1, 156, 0); // Middle line.
 
 		//strings at the top of the list
-		V_DrawCenteredString(x+6, 32, highlightflags, "#");
-		V_DrawCenteredString(x+(BASEVIDWIDTH/2)+6, 32, highlightflags, "#");
+		V_DrawCenteredString(x+6, 17, highlightflags, "#");
+		V_DrawCenteredString(x+(BASEVIDWIDTH/2)+6, 17, highlightflags, "#");
 
-		V_DrawString(x+36, 32, highlightflags, "NAME");
-		V_DrawString(x+(BASEVIDWIDTH/2)+36, 32, highlightflags, "NAME");
+		V_DrawString(x+36, 17, highlightflags, "NAME");
+		V_DrawString(x+(BASEVIDWIDTH/2)+36, 17, highlightflags, "NAME");
 
-		V_DrawRightAlignedString(x+152, 32, highlightflags, "SCORE");
-		V_DrawRightAlignedString(x+(BASEVIDWIDTH/2)+152, 32, highlightflags, "SCORE");
+		V_DrawRightAlignedString(x+152, 17, highlightflags, "SCORE");
+		V_DrawRightAlignedString(x+(BASEVIDWIDTH/2)+152, 17, highlightflags, "SCORE");
 
 		for (i = 0; i < data.match.numplayers; i++)
 		{
@@ -871,69 +882,78 @@ void Y_IntermissionDrawer(void)
 
 				if (*data.match.color[i] == SKINCOLOR_RED) //red
 				{
-					if (redplayers++ > 9)
+					if (redplayers++ > 14)
 						continue;
+
 					x = 4 + (BASEVIDWIDTH/2);
-					y = (redplayers * 16) + 32;
-					V_DrawCenteredString(x+6, y, V_REDMAP, va("%d", redplayers));
+					y = (redplayers * 10) + 22;
+					V_DrawCenteredString(x+6, y-3, V_REDMAP, va("%d", redplayers));
 				}
 				else if (*data.match.color[i] == SKINCOLOR_BLUE) //blue
 				{
-					if (blueplayers++ > 9)
+					if (blueplayers++ > 14)
 						continue;
+					
 					x = 4;
-					y = (blueplayers * 16) + 32;
-					V_DrawCenteredString(x+6, y, V_BLUEMAP, va("%d", blueplayers));
+					y = (blueplayers * 10) + 22;
+					V_DrawCenteredString(x+6, y-3, V_BLUEMAP, va("%d", blueplayers));
 				}
 				else
 					continue;
 
 				// Draw the back sprite, it looks ugly if we don't
-				V_DrawSmallScaledPatch(x+16, y-4, 0, livesback);
+				//V_DrawSmallScaledPatch(x+16, y-4, 0, livesback); -- sorry!
 
 				//color is ALWAYS going to be 6/7 here, no need to check if it's nonzero.
-				V_DrawSmallMappedPatch(x+16, y-4, 0,faceprefix[*data.match.character[i]], colormap);
+				V_DrawFixedPatch((x+16)*FRACUNIT, (y-4)*FRACUNIT, FRACUNIT/3, 0, faceprefix[*data.match.character[i]], colormap);
 
 				strlcpy(name, data.match.name[i], 15);
 
-				V_DrawThinString(x+36, y, V_ALLOWLOWERCASE, name);
+				V_DrawThinString(x+30, y-2, V_ALLOWLOWERCASE, name);
 
-				V_DrawRightAlignedThinString(x+152, y, 0, va("%u", data.match.scores[i]));
+				V_DrawRightAlignedThinString(x+152, y-2, 0, va("%u", data.match.scores[i]));
 			}
 		}
 	}
 	else if (intertype == int_comp)
 	{
 		INT32 x = 4;
-		INT32 y = 48;
+		INT32 y = 33;
+		INT32 dupadjust = (vid.width/vid.dupx), duptweak = (dupadjust - BASEVIDWIDTH)/2;
+		
 		UINT32 ptime, pring, pmaxring, pmonitor, pscore;
 		char sstrtime[10];
 
 		// draw the level name
-		V_DrawCenteredString(BASEVIDWIDTH/2, 8, 0, data.competition.levelstring);
-		V_DrawFill(4, 42, 312, 1, 0);
+		//V_DrawCenteredString(BASEVIDWIDTH/2, 8, 0, data.competition.levelstring);
+		
+		// lines!
+		V_DrawFill(1 - duptweak,  26, dupadjust - 2, 1, 0); // Draw a horizontal line because it looks nice!
+		V_DrawFill(1 - duptweak, 182, dupadjust - 2, 1, 0); // And a horizontal line near the bottom.
+		V_DrawFill(167, 26, 1, 156, 0); // "Middle" line.
 
-		V_DrawCenteredString(x+6, 32, highlightflags, "#");
-		V_DrawString(x+36, 32, highlightflags, "NAME");
+		V_DrawCenteredString(x+6, 17, highlightflags, "#");
+		V_DrawString(x+36, 17, highlightflags, "NAME");
+		
 		// Time
-		V_DrawRightAlignedString(x+160, 32, highlightflags, "TIME");
+		V_DrawRightAlignedString(x+160, 17, highlightflags, "TIME");
 
 		// Rings
-		V_DrawThinString(x+168, 32, highlightflags, "RING");
+		V_DrawThinString(x+168, 17, highlightflags, "RING");
 
 		// Total rings
-		V_DrawThinString(x+191, 24, highlightflags, "TOTAL");
-		V_DrawThinString(x+196, 32, highlightflags, "RING");
+		V_DrawThinString(x+191, 9, highlightflags, "TOTAL");
+		V_DrawThinString(x+196, 17, highlightflags, "RING");
 
 		// Monitors
-		V_DrawThinString(x+223, 24, highlightflags, "ITEM");
-		V_DrawThinString(x+229, 32, highlightflags, "BOX");
+		V_DrawThinString(x+223, 9, highlightflags, "ITEM");
+		V_DrawThinString(x+229, 17, highlightflags, "BOX");
 
 		// Score
-		V_DrawRightAlignedString(x+288, 32, highlightflags, "SCORE");
+		V_DrawRightAlignedString(x+288, 17, highlightflags, "SCORE");
 
 		// Points
-		V_DrawRightAlignedString(x+312, 32, highlightflags, "PT");
+		V_DrawRightAlignedString(x+312, 17, highlightflags, "PT");
 
 		for (i = 0; i < data.competition.numplayers; i++)
 		{
@@ -943,23 +963,20 @@ void Y_IntermissionDrawer(void)
 			pmonitor = (data.competition.monitors[i] & ~0x80000000);
 			pscore = (data.competition.scores[i] & ~0x80000000);
 
-			V_DrawCenteredString(x+6, y, 0, va("%d", i+1));
+			V_DrawCenteredString(x+6, y-3, 0, va("%d", i+1));
 
 			if (playeringame[data.competition.num[i]])
 			{
-				// Draw the back sprite, it looks ugly if we don't
-				V_DrawSmallScaledPatch(x+16, y-4, 0, livesback);
 
 				if (data.competition.color[i] == 0)
-					V_DrawSmallScaledPatch(x+16, y-4, 0,faceprefix[*data.competition.character[i]]);
+					V_DrawFixedPatch((x+16)*FRACUNIT, (y-4)*FRACUNIT, FRACUNIT/3, 0,faceprefix[*data.competition.character[i]], NULL);
 				else
 				{
 					UINT8 *colormap = R_GetTranslationColormap(*data.competition.character[i], *data.competition.color[i], GTC_CACHE);
-					V_DrawSmallMappedPatch(x+16, y-4, 0,faceprefix[*data.competition.character[i]], colormap);
+					V_DrawFixedPatch((x+16)*FRACUNIT, (y-4)*FRACUNIT, FRACUNIT/3, 0,faceprefix[*data.competition.character[i]], colormap);
 				}
 
-				// already constrained to 8 characters
-				V_DrawThinString(x+36, y, V_ALLOWLOWERCASE, data.competition.name[i]);
+				V_DrawThinString(x+30, y-2, V_ALLOWLOWERCASE, data.competition.name[i]);
 
 				if (players[data.competition.num[i]].pflags & PF_GAMETYPEOVER)
 					snprintf(sstrtime, sizeof sstrtime, "Time Over");
@@ -972,27 +989,27 @@ void Y_IntermissionDrawer(void)
 				sstrtime[sizeof sstrtime - 1] = '\0';
 				
 				// Time
-				V_DrawRightAlignedThinString(x+160, y, ((data.competition.times[i] & 0x80000000) ? V_YELLOWMAP : 0), sstrtime);
+				V_DrawRightAlignedThinString(x+160, y-2, ((data.competition.times[i] & 0x80000000) ? V_YELLOWMAP : 0), sstrtime);
 				
 				// Rings
-				V_DrawRightAlignedThinString(x+188, y, V_MONOSPACE|((data.competition.rings[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pring));
+				V_DrawRightAlignedThinString(x+188, y-2, V_MONOSPACE|((data.competition.rings[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pring));
 				
 				// Total rings
-				V_DrawRightAlignedThinString(x+216, y, V_MONOSPACE|((data.competition.maxrings[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pmaxring));
+				V_DrawRightAlignedThinString(x+216, y-2, V_MONOSPACE|((data.competition.maxrings[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pmaxring));
 				
 				// Monitors
-				V_DrawRightAlignedThinString(x+244, y, V_MONOSPACE|((data.competition.monitors[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pmonitor));
+				V_DrawRightAlignedThinString(x+244, y-2, V_MONOSPACE|((data.competition.monitors[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pmonitor));
 				
 				// Score
-				V_DrawRightAlignedThinString(x+288, y, V_MONOSPACE|((data.competition.scores[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pscore));
+				V_DrawRightAlignedThinString(x+288, y-2, V_MONOSPACE|((data.competition.scores[i] & 0x80000000) ? V_YELLOWMAP : 0), va("%u", pscore));
 				
 				// Final Points
-				V_DrawRightAlignedThinString(x+312, y, V_YELLOWMAP, va("%d", data.competition.points[i]));
+				V_DrawRightAlignedThinString(x+312, y-2, V_YELLOWMAP, va("%d", data.competition.points[i]));
 			}
 
-			y += 16;
+			y += 10;
 
-			if (y > 176)
+			if (i == 14)
 				break;
 		}
 	}
@@ -1002,12 +1019,12 @@ skiptallydrawer:
 		return;
 
 	if (timer)
-		V_DrawCenteredThinString(BASEVIDWIDTH/2, 189, V_ALLOWLOWERCASE|V_YELLOWMAP,
+		V_DrawCenteredThinString(BASEVIDWIDTH/2, 188, V_ALLOWLOWERCASE|V_YELLOWMAP,
 			va("Speeding off in %d seconds...", timer/TICRATE));
 
 	// Make it obvious that scrambling is happening next round.
 	if (cv_scrambleonchange.value && cv_teamscramble.value && (intertic/TICRATE % 2 == 0))
-		V_DrawCenteredThinString(BASEVIDWIDTH/2, BASEVIDHEIGHT/2, V_ALLOWLOWERCASE|V_YELLOWMAP, "Teams will be scrambled next round!");
+		V_DrawCenteredThinString(BASEVIDWIDTH/2, BASEVIDHEIGHT/2, V_ALLOWLOWERCASE|V_REDMAP, "Teams will be scrambled next round!");
 }
 
 //

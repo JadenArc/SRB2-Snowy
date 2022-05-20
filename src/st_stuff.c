@@ -2186,7 +2186,7 @@ static void ST_drawWeaponRing(INT32 xoffs, INT32 y, powertype_t weapon, INT32 rw
 
 	V_DrawTranslucentPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|patflags, pat);
 
-	if((stplyr->ringweapons & rwflag) || (stplyr->powers[weapon]))
+	if ((stplyr->ringweapons & rwflag) || (stplyr->powers[weapon]))
 		V_DrawCenteredThinString(16 + xoffs, y + 8, V_PERPLAYER|V_SNAPTOBOTTOM|txtflags, va("%d", stplyr->powers[weapon]));
 
 	if (stplyr->currentweapon == wepflag)
