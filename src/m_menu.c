@@ -78,7 +78,7 @@
 #endif
 
 // I dont want to modify doomdef.h lol
-#define SNOWYNAMEANDVER "Snowy - v1"
+#define SNOWYNAMEANDVER "Snowy Build"
 
 #if defined (__GNUC__) && (__GNUC__ >= 4)
 #define FIXUPO0
