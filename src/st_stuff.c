@@ -1023,6 +1023,20 @@ static void ST_drawInput(void)
 	INT32 col;
 	UINT8 offs;
 
+	if (timeinmap <= 45)
+		return;
+
+	if (timeinmap < 53)
+	{
+		INT32 count = ((INT32)(timeinmap) - 45);
+		INT32 foffs = 96;
+	
+		while (count-- > 0)
+			foffs >>= 1;
+		
+		x -= foffs;
+	}
+
 	// offset the height if we arent on record attack, or if we are a spectator.
 	if (!(modeattacking || stplyr->spectator))
 		y -= 22;
@@ -2147,7 +2161,7 @@ static void ST_drawNiGHTSHUD(void)
 static void ST_drawWeaponSelect(INT32 xoffs, INT32 y)
 {
 	INT32 q = stplyr->weapondelay, del = 0, p = 16;
-	UINT32 alpha = min(max(1, q), 7) << V_ALPHASHIFT;
+	UINT32 alpha = min(max(1, q), 8) << V_ALPHASHIFT;
 	
 	while (q)
 	{
@@ -2173,9 +2187,6 @@ static void ST_drawWeaponRing(INT32 xoffs, INT32 y, powertype_t weapon, INT32 rw
 {
 	UINT32 txtflags = 0, patflags = 0;
 
-	if (stplyr->powers[weapon] >= rw_maximums[wepflag])
-		txtflags |= V_YELLOWMAP;
-
 	if (stplyr->ringweapons & rwflag)
 	{
 		txtflags = 0;
@@ -2186,6 +2197,9 @@ static void ST_drawWeaponRing(INT32 xoffs, INT32 y, powertype_t weapon, INT32 rw
 		txtflags |= V_TRANSLUCENT;
 		patflags = V_60TRANS;
 	}
+
+	if (stplyr->powers[weapon] >= rw_maximums[wepflag])
+		txtflags |= V_YELLOWMAP;
 
 	V_DrawTranslucentPatch(8 + xoffs, y, V_PERPLAYER|V_SNAPTOBOTTOM|patflags, pat);
 

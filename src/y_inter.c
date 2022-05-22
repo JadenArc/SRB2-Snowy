@@ -1023,8 +1023,8 @@ skiptallydrawer:
 			va("Speeding off in %d seconds...", timer/TICRATE));
 
 	// Make it obvious that scrambling is happening next round.
-	if (cv_scrambleonchange.value && cv_teamscramble.value && (intertic/TICRATE % 2 == 0))
-		V_DrawCenteredThinString(BASEVIDWIDTH/2, BASEVIDHEIGHT/2, V_ALLOWLOWERCASE|V_REDMAP, "Teams will be scrambled next round!");
+	if (cv_scrambleonchange.value && cv_teamscramble.value && (intertic % 2 == 0))
+		V_DrawCenteredThinString(BASEVIDWIDTH/2, 5, V_ALLOWLOWERCASE|V_YELLOWMAP, "Teams will be scrambled next round!");
 }
 
 //

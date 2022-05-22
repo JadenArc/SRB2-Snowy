@@ -504,16 +504,16 @@ consvar_t cv_dummyloadless = CVAR_INIT ("dummyloadless", "In-game", CV_HIDEN, lo
 // ---------
 static menuitem_t MainMenu[] =
 {
-	{IT_STRING|IT_CALL,    NULL, "Single Player",   M_SinglePlayerMenu,      76},
+	{IT_STRING|IT_CALL,    NULL, "Single Player",   	  M_SinglePlayerMenu,      76},
 #ifndef NONET
-	{IT_STRING|IT_SUBMENU, NULL, "Multiplayer", &MP_MainDef,             84},
+	{IT_STRING|IT_SUBMENU, NULL, "Multiplayer", 		  &MP_MainDef,             84},
 #else
-	{IT_STRING|IT_CALL,    NULL, "Multiplayer", M_StartSplitServerMenu,  84},
+	{IT_STRING|IT_CALL,    NULL, "Multiplayer",			  M_StartSplitServerMenu,  84},
 #endif
-	{IT_STRING|IT_CALL,    NULL, "Extras",      M_SecretsMenu,           92},
-	{IT_CALL   |IT_STRING, NULL, "Addons",      M_Addons,               100},
-	{IT_STRING|IT_CALL,    NULL, "Options",     M_Options,              108},
-	{IT_STRING|IT_CALL,    NULL, "Quit Game",  M_QuitSRB2,             116},
+	{IT_STRING|IT_CALL,    NULL, "Extras & Secrets",      M_SecretsMenu,           92},
+	{IT_CALL   |IT_STRING, NULL, "Addons",      		  M_Addons,               100},
+	{IT_STRING|IT_CALL,    NULL, "Options",  			  M_Options,              108},
+	{IT_STRING|IT_CALL,    NULL, "Quit Game",			  M_QuitSRB2,             116},
 };
 
 typedef enum
@@ -3746,14 +3746,20 @@ void M_Drawer(void)
 		}
 	}
 
+	// draw pause pic
+	if (paused && cv_showhud.value && (!menuactive || netgame))
+	{
+		V_DrawFadeScreen(0xFA00, 13);
+
+		patch_t *paused_pic = W_CachePatchName("M_PAUSE", PU_PATCH); // this doesnt exist on the vanilla files, but you can add it yourself in a separate file!
+		V_DrawScaledPatch(160 - (paused_pic->width/2), 100 - (paused_pic->height/2), 0, paused_pic);
+	}
+
 	// focus lost notification goes on top of everything, even the former everything
 	if (window_notinfocus && cv_showfocuslost.value)
 	{
 		M_DrawTextBox((BASEVIDWIDTH/2) - (60), (BASEVIDHEIGHT/2) - (16), 13, 2);
-		if (gamestate == GS_LEVEL && (P_AutoPause() || paused))
-			V_DrawCenteredString(BASEVIDWIDTH/2, (BASEVIDHEIGHT/2) - (4), highlightflags, "Game Paused");
-		else
-			V_DrawCenteredString(BASEVIDWIDTH/2, (BASEVIDHEIGHT/2) - (4), highlightflags, "Focus Lost");
+		V_DrawCenteredString(BASEVIDWIDTH/2, (BASEVIDHEIGHT/2) - (4), highlightflags, "Focus Lost");
 	}
 }
 
