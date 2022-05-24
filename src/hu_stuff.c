@@ -2621,10 +2621,10 @@ static void JH_DrawTeamRankings(playersort_t *tab, INT32 whiteplayer)
 		INT32 x1 = ((x + 2) + rightoffset);
 
 		if (players[tab[i].num].gotflag & GF_REDFLAG)
-			V_DrawFixedPatch(x1*FRACUNIT, (y-3)*FRACUNIT, FRACUNIT/4, flags, rflagico, NULL);
-		
+			V_DrawTinyScaledPatch(x1, y-3, flags, rflagico);
+
 		else if (players[tab[i].num].gotflag & GF_BLUEFLAG)
-			V_DrawFixedPatch(x1*FRACUNIT, (y-3)*FRACUNIT, FRACUNIT/4, flags, bflagico, NULL);
+			V_DrawTinyScaledPatch(x1, y-3, flags, bflagico);
 	}
 
 	J_LoadBasicScoreboard();

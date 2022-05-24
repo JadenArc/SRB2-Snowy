@@ -888,83 +888,85 @@ static void ST_drawLivesArea(void)
 	// Lives number
 	else
 	{
-		if (!(stplyr->spectator)) // meh.
+		boolean candrawlives = true;
+
+		// dont draw this as a spectator!
+		if (stplyr->spectator)
+			candrawlives = false;
+
+		// Co-op and Competition, normal life counter
+		else if (G_GametypeUsesLives())
 		{
-			boolean candrawlives = true;
-
-			// Co-op and Competition, normal life counter
-			if (G_GametypeUsesLives())
+			// Handle cooplives here
+			if ((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 3)
 			{
-				// Handle cooplives here
-				if ((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 3)
+				INT32 i;
+				livescount = 0;
+				notgreyedout = (stplyr->lives > 0);
+	
+				for (i = 0; i < MAXPLAYERS; i++)
 				{
-					INT32 i;
-					livescount = 0;
-					notgreyedout = (stplyr->lives > 0);
-					for (i = 0; i < MAXPLAYERS; i++)
+					if (!playeringame[i])
+						continue;
+
+					if (players[i].lives < 1)
+						continue;
+
+					if (players[i].lives > 1)
+						notgreyedout = true;
+
+					if (players[i].lives == INFLIVES)
 					{
-						if (!playeringame[i])
-							continue;
-
-						if (players[i].lives < 1)
-							continue;
-
-						if (players[i].lives > 1)
-							notgreyedout = true;
-
-						if (players[i].lives == INFLIVES)
-						{
-							livescount = INFLIVES;
-							break;
-						}
-						else if (livescount < 99)
-							livescount += (players[i].lives);
+						livescount = INFLIVES;
+						break;
 					}
-				}
-				else
-				{
-					livescount = (((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 0) ? INFLIVES : stplyr->lives);
-					notgreyedout = true;
+					else if (livescount < 99)
+						livescount += (players[i].lives);
 				}
 			}
-			
-			// Infinity symbol (Race)
-			else if (G_PlatformGametype() && !(gametyperules & GTR_LIVES))
+			else
 			{
-				livescount = INFLIVES;
+				livescount = (((netgame || multiplayer) && G_GametypeUsesCoopLives() && cv_cooplives.value == 0) ? INFLIVES : stplyr->lives);
 				notgreyedout = true;
 			}
+		}
+		
+		// Infinity symbol (Race)
+		else if (G_PlatformGametype() && !(gametyperules & GTR_LIVES))
+		{
+			livescount = INFLIVES;
+			notgreyedout = true;
+		}
 			
-			// Otherwise nothing, sorry.
-			// Special Stages keep not showing lives,
-			// as G_GametypeUsesLives() returns false in
-			// Special Stages, and the infinity symbol
-			// cannot show up because Special Stages
-			// still have the GTR_LIVES gametype rule
-			// by default.
-			else
-				candrawlives = false;
+		// Otherwise nothing, sorry.
+		// Special Stages keep not showing lives,
+		// as G_GametypeUsesLives() returns false in
+		// Special Stages, and the infinity symbol
+		// cannot show up because Special Stages
+		// still have the GTR_LIVES gametype rule
+		// by default.
+		else
+			candrawlives = false;
 
-			// Draw the lives counter here.
-			if (candrawlives)
+		// Draw the lives counter here.
+		if (candrawlives)
+		{
+			// x
+			V_DrawScaledPatch(hudinfo[HUD_LIVES].x+22, hudinfo[HUD_LIVES].y+10, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, stlivex);
+			
+			if (livescount == INFLIVES)
+				V_DrawCharacter(hudinfo[HUD_LIVES].x+50, hudinfo[HUD_LIVES].y+8,
+					'\x16' | 0x80 | hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, false);
+			else
 			{
-				// x
-				V_DrawScaledPatch(hudinfo[HUD_LIVES].x+22, hudinfo[HUD_LIVES].y+10, hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, stlivex);
-				
-				if (livescount == INFLIVES)
-					V_DrawCharacter(hudinfo[HUD_LIVES].x+50, hudinfo[HUD_LIVES].y+8,
-						'\x16' | 0x80 | hudinfo[HUD_LIVES].f|V_PERPLAYER|V_HUDTRANS, false);
-				else
-				{
-					if (stplyr->playerstate == PST_DEAD && !(stplyr->spectator) && (livescount || stplyr->deadtimer < (TICRATE<<1)) && !(stplyr->pflags & PF_FINISHED))
-						livescount++;
+				if (stplyr->playerstate == PST_DEAD && !(stplyr->spectator) && (livescount || stplyr->deadtimer < (TICRATE<<1)) && !(stplyr->pflags & PF_FINISHED))
+					livescount++;
 					
-					if (livescount > 99)
-						livescount = 99;
+				if (livescount > 99)
+					livescount = 99;
 					
-					V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
-						hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d", livescount));
-				}
+				V_DrawRightAlignedString(hudinfo[HUD_LIVES].x+58, hudinfo[HUD_LIVES].y+8,
+					hudinfo[HUD_LIVES].f|V_PERPLAYER|(notgreyedout ? V_HUDTRANS : V_HUDTRANSHALF), va("%d", livescount));
 			}
 		}
 	}
@@ -994,14 +996,14 @@ static void ST_drawLivesArea(void)
 
 		for (j = 0; j < 7; ++j)
 		{
-			UINT32 flags = V_HUDTRANSHALF;
+			UINT32 flags = V_40TRANS;
 			INT32 x = hudinfo[HUD_LIVES].x + (9 * j);
 			INT32 y = hudinfo[HUD_LIVES].y + 5;
 			
 			if (!stplyr->spectator)
 			{
 				if ((stplyr->powers[pw_emeralds] & (1 << j)) || ((leveltime & 1) && stplyr->powers[pw_invulnerability] && (stplyr->powers[pw_sneakers] == stplyr->powers[pw_invulnerability])))
-					flags = V_HUDTRANS;
+					flags = 0;
 				
 				V_DrawScaledPatch(x, y, flags|hudinfo[HUD_LIVES].f|V_PERPLAYER, emeraldpics[1][j]);
 			}
@@ -1201,6 +1203,7 @@ static void ST_drawInput(void)
 		// text above
 		x -= 2;
 		y -= 13;
+	
 		if (stplyr->powers[pw_carry] != CR_NIGHTSMODE)
 		{
 			if (stplyr->pflags & PF_AUTOBRAKE)
@@ -1216,32 +1219,34 @@ static void ST_drawInput(void)
 					"AUTOBRAKE");
 				y -= 8;
 			}
+	
 			switch (P_ControlStyle(stplyr))
 			{
-			case CS_LMAOGALOG:
-				V_DrawThinString(x, y, flags, "ANALOG");
-				y -= 8;
-				break;
+				case CS_LMAOGALOG:
+					V_DrawThinString(x, y, flags, "ANALOG");
+					y -= 8;
+					break;
 
-			case CS_SIMPLE:
-				V_DrawThinString(x, y, flags, "AUTOMATIC");
-				y -= 8;
-				break;
+				case CS_SIMPLE:
+					V_DrawThinString(x, y, flags, "AUTOMATIC");
+					y -= 8;
+					break;
 
-			case CS_STANDARD:
-				V_DrawThinString(x, y, flags, "MANUAL");
-				y -= 8;
-				break;
+				case CS_STANDARD:
+					V_DrawThinString(x, y, flags, "MANUAL");
+					y -= 8;
+					break;
 
-			case CS_LEGACY:
-				V_DrawThinString(x, y, flags, "STRAFE");
-				y -= 8;
-				break;
+				case CS_LEGACY:
+					V_DrawThinString(x, y, flags, "STRAFE");
+					y -= 8;
+					break;
 
-			default:
-				break;
+				default:
+					break;
 			}
 		}
+		
 		if (!demosynced) // should always be last, so it doesn't push anything else around
 			V_DrawThinString(x, y, flags|((leveltime & 4) ? V_YELLOWMAP : V_REDMAP), "BAD DEMO!!");
 	}
@@ -1263,7 +1268,7 @@ tic_t lt_exitticker = 0, lt_endtime = 0;
 //
 static void ST_cacheLevelTitle(void)
 {
-#define SETPATCH(default, warning, custom, idx) \
+#define SETPATCH(def, warning, custom, idx) \
 { \
 	lumpnum_t patlumpnum = LUMPERROR; \
 	if (mapheaderinfo[gamemap-1]->custom[0] != '\0') \
@@ -1275,7 +1280,7 @@ static void ST_cacheLevelTitle(void)
 	if (patlumpnum == LUMPERROR) \
 	{ \
 		if (!(mapheaderinfo[gamemap-1]->levelflags & LF_WARNINGTITLE)) \
-			lt_patches[idx] = (patch_t *)W_CachePatchName(default, PU_HUDGFX); \
+			lt_patches[idx] = (patch_t *)W_CachePatchName(def, PU_HUDGFX); \
 		else \
 			lt_patches[idx] = (patch_t *)W_CachePatchName(warning, PU_HUDGFX); \
 	} \
@@ -2738,15 +2743,16 @@ static void ST_overlayDrawer(void)
 				ST_drawRaceNum(countdown);
 			else
 			{
-				tic_t num = time;
+				/*tic_t num = time;
 				INT32 sz = tallnum[0]->width / 2, width = 0;
 				do
 				{
 					width += sz;
 					num /= 10;
 				} while (num);
-				V_DrawTallNum((BASEVIDWIDTH/2) + width, ((3*BASEVIDHEIGHT)>>2) - 7, V_PERPLAYER, time);
-				//V_DrawCenteredString(BASEVIDWIDTH/2, 176, V_PERPLAYER, va("%d", countdown/TICRATE + 1));
+				V_DrawTallNum((BASEVIDWIDTH/2) + width, ((3*BASEVIDHEIGHT)>>2) - 7, V_PERPLAYER, time);*/
+				
+				V_DrawCenteredThinString(BASEVIDWIDTH/2, 191, V_PERPLAYER|V_ALLOWLOWERCASE, va("\x82%d \x80seconds left.", time));
 			}
 		}
 
@@ -2776,17 +2782,14 @@ static void ST_overlayDrawer(void)
 		if (!P_IsLocalPlayer(stplyr))
 		{
 			char name[MAXPLAYERNAME+1];
-			UINT32 flags = V_SNAPTORIGHT|V_SNAPTOTOP;
+			UINT32 flags = V_ALLOWLOWERCASE|V_SNAPTORIGHT|V_SNAPTOTOP;
 			
-			// shorten the name if its more than eleven characters.
-			strlcpy(name, player_names[stplyr-players], 11);
+			// shorten the name if its more than fourteen characters.
+			strlcpy(name, player_names[stplyr-players], 14);
 
 			// draw the name!
-			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 8, flags|V_ALLOWLOWERCASE|V_YELLOWMAP, "Viewpoint:");
-			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 16, flags|V_ALLOWLOWERCASE, name);
-
-			// ping???
-			HU_drawPing(BASEVIDWIDTH - 72, 12, stplyr->quittime ? UINT32_MAX : playerpingtable[(stplyr - players)], false, flags);
+			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 8, flags|V_YELLOWMAP, "Viewpoint:");
+			V_DrawRightAlignedThinString(BASEVIDWIDTH - 4, 16, flags, name);
 		}
 
 		// This is where we draw all the fun cheese if you have the chasecam off!
@@ -2807,9 +2810,8 @@ static void ST_overlayDrawer(void)
 		ST_drawPowerupHUD(); // same as it ever was...
 
 	// draw the input!
-	if (!hu_showscores)
-		if (!(demoplayback || chat_on))
-			ST_drawInput();
+	if (!(demoplayback || chat_on) || !hu_showscores)
+		ST_drawInput();
 
 	if (!(netgame || multiplayer) || !hu_showscores)
 		LUA_HUDHOOK(game);
