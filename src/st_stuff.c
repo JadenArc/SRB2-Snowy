@@ -2805,13 +2805,13 @@ static void ST_overlayDrawer(void)
 			else if (cv_powerupdisplay.value == 2)
 				ST_drawPowerupHUD();  // same as it ever was...
 		}
+
+		// draw the input!
+		if (!(demoplayback || chat_on))
+			ST_drawInput();
 	}
 	else if (!(netgame || multiplayer) && cv_powerupdisplay.value == 2)
 		ST_drawPowerupHUD(); // same as it ever was...
-
-	// draw the input!
-	if (!(demoplayback || chat_on) || !hu_showscores)
-		ST_drawInput();
 
 	if (!(netgame || multiplayer) || !hu_showscores)
 		LUA_HUDHOOK(game);
