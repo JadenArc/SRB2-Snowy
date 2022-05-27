@@ -814,32 +814,32 @@ static void Got_Saycmd(UINT8 **p, INT32 playernum)
 			fmt2 = "* %s%s%s%s \x82%s%s";
 		else if (target-1 == consoleplayer) // To you
 		{
-			prefix = "\x82[PM]";
+			prefix = "\x82[From] ";
 			cstart = "\x82";
 			textcolor = "\x82";
-			fmt2 = "%s<%s%s>%s\x80 %s%s";
+			fmt2 = "%s%s%s\x80:%s %s%s";
 		}
 		else if (target > 0) // By you, to another player
 		{
 			// Use target's name.
 			dispname = player_names[target-1];
-			prefix = "\x82[TO]";
+			prefix = "\x82[To] ";
 			cstart = "\x82";
-			fmt2 = "%s<%s%s>%s\x80 %s%s";
+			fmt2 = "%s%s%s\x80:%s %s%s";
 
 		}
 		else if (target == 0) // To everyone
-			fmt2 = "%s<%s%s%s>\x80 %s%s";
+			fmt2 = "%s%s%s%s\x80: %s%s";
 		else // To your team
 		{
 			if (players[playernum].ctfteam == 1) // red
-				prefix = "\x85[TEAM]";
+				prefix = "\x85[Team] ";
 			else if (players[playernum].ctfteam == 2) // blue
-				prefix = "\x84[TEAM]";
+				prefix = "\x84[Team] ";
 			else
 				prefix = "\x83"; // makes sure this doesn't implode if you sayteam on non-team gamemodes
 
-			fmt2 = "%s<%s%s>\x80%s %s%s";
+			fmt2 = "%s%s%s\x80:%s %s%s";
 		}
 
 		HU_AddChatText(va(fmt2, prefix, cstart, dispname, cend, textcolor, msg), cv_chatnotifications.value); // add to chat
