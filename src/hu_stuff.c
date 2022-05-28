@@ -1324,8 +1324,8 @@ static void HU_drawMiniChat(void)
 
 	y = chaty - charheight*(msglines+1);
 
-	if (cv_showinput.value)
-		y -= 20;
+	if ((cv_showinput.value) && !(stplyr->spectator))
+		y -= 18;
 
 	/*if (splitscreen)
 	{
