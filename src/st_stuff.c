@@ -1396,7 +1396,7 @@ void ST_drawTitleCard(void)
 	if (players[consoleplayer].skincolor)
 		colornum = players[consoleplayer].skincolor;
 	else
-		colornum = cv_playercolor.value;
+		colornum = R_GetColorByName(cv_playercolor.string);
 
 	colormap = R_GetTranslationColormap(TC_DEFAULT, colornum, GTC_CACHE);
 
