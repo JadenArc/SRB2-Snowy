@@ -1107,15 +1107,15 @@ static menuitem_t OP_HUDOptions[] =
 	{IT_STRING | IT_CVAR, NULL, "Text Size",         &cv_constextsize,    66},
 	{IT_STRING | IT_CVAR, NULL, "Menu Highlights",	 &cons_menuhighlight, 71},
 
-	{IT_HEADER, NULL, "Chat", NULL, 85},
+	{IT_HEADER, NULL, "Chat", NULL, 80},
 	
-	{IT_STRING | IT_CVAR, 				 NULL, "Chat Mode",            		 	 &cv_consolechat,  		   91},
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Width",   				 &cv_chatwidth,     	   96},
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Height",  				 &cv_chatheight,    	  101},
-	{IT_STRING | IT_CVAR, 				 NULL, "Message Fadeout Time",           &cv_chattime,     		  106},
-	{IT_STRING | IT_CVAR,				 NULL, "Chat Notifications",           	 &cv_chatnotifications,   111},
-	{IT_STRING | IT_CVAR,				 NULL, "Spam Protection",           	 &cv_chatspamprotection,  116},
-	{IT_STRING | IT_CVAR,				 NULL, "Chat background tint",           &cv_chatbacktint,  	  121},
+	{IT_STRING | IT_CVAR, 				 NULL, "Chat Mode",            		 	 &cv_consolechat,  		   86},
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Width",   				 &cv_chatwidth,     	   91},
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Height",  				 &cv_chatheight,    	   96},
+	{IT_STRING | IT_CVAR, 				 NULL, "Message Fadeout Time",           &cv_chattime,     		  101},
+	{IT_STRING | IT_CVAR,				 NULL, "Chat Notifications",           	 &cv_chatnotifications,   106},
+	{IT_STRING | IT_CVAR,				 NULL, "Spam Protection",           	 &cv_chatspamprotection,  111},
+	{IT_STRING | IT_CVAR,				 NULL, "Chat background tint",           &cv_chatbacktint,  	  116},
 };
 
 static menuitem_t OP_P1ControlsMenu[] =
