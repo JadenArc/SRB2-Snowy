@@ -2188,17 +2188,12 @@ static void J_LoadBasicScoreboard(void)
 		for (i = 0; i < 7; i++)
 		{
 			UINT32 flags = V_TRANSLUCENT;
-					
-			// fheuviboewvhpocuhiqn jqcvnrej,..,.,.
-			char buffer[9];
-			sprintf(buffer, "TEMER%d", i+1);
-			patch_t *emerald = W_CachePatchName(buffer, PU_HUDGFX);
-			
+							
 			// remove translucency if we have some emeralds...
 			if (emeralds & (EMERALD1 << i))
 				flags = 0;
 
-			V_DrawTranslucentPatch(8 + (10*i), 8, V_SNAPTOLEFT|flags, emerald);
+			V_DrawTranslucentPatch(8 + (10*i), 8, V_SNAPTOLEFT|flags, emeraldpics[1][i]);
 		}
 	}
 
@@ -2703,41 +2698,6 @@ static void HU_DrawRankings(void)
 
 	// Fade the screen so it can be clearly seen.
 	V_DrawFadeScreen(0xFF00, 16);
-
-	/*if (gametyperules & (GTR_TIMELIMIT|GTR_POINTLIMIT))
-	{
-		if ((gametyperules & GTR_TIMELIMIT) && cv_timelimit.value && timelimitintics > 0)
-		{
-			V_DrawCenteredString(64, 6, 0, "TIME");
-			V_DrawCenteredString(64, 14, 0, va("%i:%02i", G_TicsToMinutes(stplyr->realtime, true), G_TicsToSeconds(stplyr->realtime)));
-		}
-
-		if ((gametyperules & GTR_POINTLIMIT) && cv_pointlimit.value > 0)
-		{
-			V_DrawCenteredString(256, 6, 0, "POINT LIMIT");
-			V_DrawCenteredString(256, 14, 0, va("%d", cv_pointlimit.value));
-		}
-	}
-	else if (gametyperankings[gametype] == GT_COOP)
-	{
-		INT32 totalscore = 0;
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			if (playeringame[i])
-				totalscore += players[i].score;
-		}
-
-		V_DrawCenteredString(256, 6, 0, "TOTAL SCORE");
-		V_DrawCenteredString(256, 14, 0, va("%u", totalscore));
-	}
-	else
-	{
-		if (circuitmap)
-		{
-			V_DrawCenteredString(64, 6, 0, "NUMBER OF LAPS");
-			V_DrawCenteredString(64, 14, 0, va("%d", cv_numlaps.value));
-		}
-	}*/
 
 	// When you play, you quickly see your score because your name is displayed in white.
 	// When playing back a demo, you quickly see who's the view.
