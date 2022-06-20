@@ -1117,7 +1117,12 @@ static inline void CL_DrawConnectionStatus(void)
 			case CL_ASKJOIN:
 			case CL_WAITJOINRESPONSE:
 				if (serverisfull)
+				{
+					if (snake)
+						Snake_Draw();
+
 					cltext = M_GetText("Server full, waiting for a slot...");
+				}
 				else
 					cltext = M_GetText("Requesting to join...");
 				break;
