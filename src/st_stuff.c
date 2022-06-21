@@ -2813,15 +2813,15 @@ static void ST_overlayDrawer(void)
 	else if (!(netgame || multiplayer) && cv_powerupdisplay.value == 2)
 		ST_drawPowerupHUD(); // same as it ever was...
 
+	if (!hu_showscores && (netgame || multiplayer) && LUA_HudEnabled(hud_textspectator))
+		ST_drawTextHUD();
+
 	if (!(netgame || multiplayer) || !hu_showscores)
 		LUA_HUDHOOK(game);
 
 	// draw level title Tails
 	if (stagetitle && (!WipeInAction) && (!WipeStageTitle))
 		ST_drawTitleCard();
-
-	if (!hu_showscores && (netgame || multiplayer) && LUA_HudEnabled(hud_textspectator))
-		ST_drawTextHUD();
 	
 	ST_drawDebugInfo();
 }
