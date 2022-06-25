@@ -77,9 +77,6 @@
 #endif
 #endif
 
-// I dont want to modify doomdef.h lol
-#define SNOWYNAMEANDVER "Snowy Build"
-
 #if defined (__GNUC__) && (__GNUC__ >= 4)
 #define FIXUPO0
 #endif
@@ -3725,9 +3722,6 @@ void M_Drawer(void)
 		// ... but only in the MAIN MENU.  I'm a picky bastard.
 		if (currentMenu == &MainDef)
 		{
-			// draw Jadens funny build name
-			V_DrawRightAlignedThinString(BASEVIDWIDTH - 3, 191, V_SNAPTORIGHT|V_SNAPTOBOTTOM|V_TRANSLUCENT|V_ALLOWLOWERCASE, SNOWYNAMEANDVER);
-
 			if (customversionstring[0] != '\0')
 			{
 				V_DrawThinString(3, 183, V_ALLOWLOWERCASE|V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_TRANSLUCENT, "Mod version:");
