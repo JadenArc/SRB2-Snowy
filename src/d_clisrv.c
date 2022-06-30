@@ -1052,7 +1052,7 @@ static inline void CL_DrawConnectionStatus(void)
 	// Draw background fade
 	V_DrawFadeScreen(0xFF00, 16); // force default
 
-	if (cl_mode != CL_DOWNLOADFILES && cl_mode != CL_LOADFILES)
+	if (cl_mode != CL_DOWNLOADFILES && cl_mode != CL_LOADFILES && cl_mode != CL_CHECKFILES && cl_mode != CL_ASKFULLFILELIST)
 	{
 		INT32 i, animtime = ((ccstime / 4) & 15) + 16;
 		UINT8 palstart;
@@ -1101,11 +1101,6 @@ static inline void CL_DrawConnectionStatus(void)
 					cltext = M_GetText("Waiting to download game state...");
 				break;
 			
-			case CL_ASKFULLFILELIST:
-			case CL_CHECKFILES:
-				cltext = M_GetText("Checking server addon list...");
-				break;
-			
 			case CL_CONFIRMCONNECT:
 				cltext = "";
 				break;
@@ -1135,7 +1130,36 @@ static inline void CL_DrawConnectionStatus(void)
 	}
 	else
 	{
-		if (cl_mode == CL_LOADFILES)
+		//
+		// Kart Port: Check the total files in the selected server.
+		//
+		if (cl_mode == CL_CHECKFILES || cl_mode == CL_ASKFULLFILELIST)
+		{
+			INT32 totalfileslength;
+			INT32 checkednum = 0;
+			INT32 i;
+
+			V_DrawCenteredString(BASEVIDWIDTH/2, BASEVIDHEIGHT-16-16, V_YELLOWMAP|V_ALLOWLOWERCASE, "Press ESC to abort");
+			
+			if (fileneeded)
+			{
+				for (i = 0; i < fileneedednum; i++)
+					if (fileneeded[i].status != FS_NOTCHECKED)
+						checkednum++;
+			}
+
+			V_DrawCenteredString(BASEVIDWIDTH/2, BASEVIDHEIGHT-16-24, V_YELLOWMAP|V_ALLOWLOWERCASE, "Checking server addon list...");
+			totalfileslength = (INT32)((checkednum/(double)(fileneedednum)) * 256);
+			
+			M_DrawTextBox(BASEVIDWIDTH/2-128-8, BASEVIDHEIGHT-16-8, 32, 1);
+			
+			V_DrawFill(BASEVIDWIDTH/2-128, BASEVIDHEIGHT-16, 256, 8, 111);
+			V_DrawFill(BASEVIDWIDTH/2-128, BASEVIDHEIGHT-16, totalfileslength, 8, 96);
+			
+			V_DrawCenteredString(BASEVIDWIDTH/2, BASEVIDHEIGHT-16, V_20TRANS|V_MONOSPACE|V_ALLOWLOWERCASE,
+				va(" %2u/%2u Files", checkednum, fileneedednum));
+		}
+		else if (cl_mode == CL_LOADFILES)
 		{
 			INT32 totalfileslength;
 			INT32 loadcompletednum = 0;
@@ -1225,7 +1249,7 @@ static inline void CL_DrawConnectionStatus(void)
 				va("%3.1fK/s ", ((double)getbps)/1024));
 
 			//
-			// Download progress (kart port)
+			// Kart Port: Download progress.
 			//
 
 			if (fileneeded[lastfilenum].currentsize != fileneeded[lastfilenum].totalsize)

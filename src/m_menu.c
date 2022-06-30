@@ -11275,19 +11275,32 @@ static void M_DrawConnectMenu(void)
 			INT32 rightoffs = 265;
 
 			UINT32 globalflags = (serverlist[slindex].info.refusereason ? V_TRANSLUCENT : 0) | ((itemOn == FIRSTSERVERLINE+i) ? highlightflags : 0) | V_ALLOWLOWERCASE;
+		
+			// Draw the current server addons. (Always first, some fucking bug with strings happened and i dont wanna see it again,.,.,,.,.,.,.)
+			const char *filestring;
 
-			// Draw the server name!
-			V_DrawThinString(currentMenu->x + 26, S_LINEY(i), globalflags, serverlist[slindex].info.servername);
+			if (serverlist[slindex].info.modifiedgame)
+			{
+				if (serverlist[slindex].info.flags & SV_LOTSOFADDONS) 
+					filestring = va("%cAddons:\x80 21+", '\x85');
+				
+				else
+					filestring = va("%cAddons:\x80 %d", '\x85', serverlist[slindex].info.fileneedednum);
+			}
+			else
+				filestring = "\x8AVanilla";
+			
+			V_DrawRightAlignedSmallString(currentMenu->x + rightoffs, S_LINEY(i)+7, globalflags, filestring);
 
 			// a more friendly ping, rather than just plain text.
 			HU_drawPing(currentMenu->x + 10, S_LINEY(i)+3, (UINT32)LONG(serverlist[slindex].info.time), false, 0);
 
+			// Draw the server name!
+			V_DrawThinString(currentMenu->x + 26, S_LINEY(i), globalflags, serverlist[slindex].info.servername);
+
 			// how many players are in the game?
 			V_DrawRightAlignedThinString(currentMenu->x + rightoffs, S_LINEY(i), globalflags,
 			                         va("[%02d - %02d]", serverlist[slindex].info.numberofplayer, serverlist[slindex].info.maxplayer));
-
-			// Draw something, just if a server is modded or not. No one does care about cheats doe
-			V_DrawRightAlignedSmallString(currentMenu->x + rightoffs, S_LINEY(i)+7, globalflags, va("%s", (serverlist[slindex].info.modifiedgame) ? "\x85Modified" : "\x8AVanilla"));
 
 			// I don't really see a long gametype name anywhere...
 			V_DrawSmallString(currentMenu->x + 26, S_LINEY(i)+7, globalflags, va("Gametype: %s", serverlist[slindex].info.gametypename));
