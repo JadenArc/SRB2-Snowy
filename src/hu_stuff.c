@@ -2630,18 +2630,16 @@ static void JH_DrawTeamRankings(playersort_t *tab, INT32 whiteplayer)
 //
 static inline void HU_DrawSpectatorTicker(void)
 {
-	int i;
-	int length = 0;
-	int totallength = 0, templength = 0;
-
-	INT32 realwidth = (vid.width/vid.dupx);
+	int i, length = 0;
+	int totallength = 0, templength = -8;
+	INT32 dupadjust = (vid.width/vid.dupx), duptweak = (dupadjust - BASEVIDWIDTH)/2;
 
 	for (i = 0; i < MAXPLAYERS; i++)
 		if (playeringame[i] && players[i].spectator)
 			totallength += (signed)strlen(player_names[i]) * 8 + 16;
 
-	length -= (leveltime % (totallength + realwidth));
-	length += realwidth;
+	length -= (leveltime % (totallength + dupadjust+8));
+	length += dupadjust;
 
 	for (i = 0; i < MAXPLAYERS; i++)
 		if (playeringame[i] && players[i].spectator)
@@ -2649,15 +2647,17 @@ static inline void HU_DrawSpectatorTicker(void)
 			char *pos;
 			char initial[MAXPLAYERNAME+1];
 			char current[MAXPLAYERNAME+1];
+			
+			INT32 len = ((signed)strlen(player_names[i]) * 8 + 16);
 
 			strcpy(initial, player_names[i]);
 			pos = initial;
 
-			if (length >= -((signed)strlen(player_names[i]) * 8 + 16) && length <= realwidth)
+			if (length >= -len)
 			{
-				if (length < 0)
+				if (length < -8)
 				{
-					UINT8 eatenchars = (UINT8)(abs(length) / 8 + 1);
+					UINT8 eatenchars = (UINT8)(abs(length) / 8);
 
 					if (eatenchars <= strlen(initial))
 					{
@@ -2665,7 +2665,7 @@ static inline void HU_DrawSpectatorTicker(void)
 						// then compensate the drawing position.
 						pos += eatenchars;
 						strcpy(current, pos);
-						templength = length % 8 + 8;
+						templength = ((length % 8) + 8);
 					}
 					else
 					{
@@ -2679,10 +2679,11 @@ static inline void HU_DrawSpectatorTicker(void)
 					templength = length;
 				}
 
-				V_DrawString(templength, 8, V_TRANSLUCENT|V_ALLOWLOWERCASE, current);
+				V_DrawString(templength - duptweak, 8, V_TRANSLUCENT|V_ALLOWLOWERCASE, current);
 			}
 
-			length += (signed)strlen(player_names[i]) * 8 + 16;
+			if ((length += len) >= dupadjust+8)
+				break;
 		}
 }
 
