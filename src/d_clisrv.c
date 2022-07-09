@@ -3072,6 +3072,13 @@ SINT8 nametonum(const char *name)
   */
 static void Command_Nodes(void)
 {
+	// Yeah
+	if (gamestate != GS_LEVEL || demoplayback)
+	{	
+		CONS_Printf("You must be in a level to use this.\n");
+		return;
+	}
+
 	INT32 i;
 	int width = 0;
 	const char *address;
@@ -3081,7 +3088,7 @@ static void Command_Nodes(void)
 	
 	int player_mode = 0;
 	int name;
-	const char *player_color;
+	const char *player_skincolor;
 
 	/* 
 		"player_mode" can define 3 situations:
@@ -3124,34 +3131,27 @@ static void Command_Nodes(void)
 			is_admin     = IsPlayerAdmin(i);
 			is_spectator = players[i].spectator;
 
-			if (is_admin)
-				player_color = "\x85"; 
-		
-			else if (is_spectator)
-				player_color = "\x86"; 
-		
-			else
-				player_color = "";
+			player_skincolor = V_GetSkincolorCode(players[i].skincolor);
 
-			CONS_Printf("%.2d: %-*s \x80", i, width, player_names[i]);
+			CONS_Printf("\x82[\x86%.2d\x82] %s%-*s \x80", i, player_skincolor, width, player_names[i]);
 
 			if (I_GetNodeAddress)
 			{
-				if (( address = I_GetNodeAddress(playernode[i]) ))
-					CONS_Printf(" -- %s", address);
+				if ((address = I_GetNodeAddress(playernode[i])))
+					CONS_Printf("-> %s", address);
 				else
 				{
 					/* ...but not if there's a crammed status and were admin */
 					if (player_mode != 7 || !is_admin)
-						CONS_Printf(" --     ");
+						CONS_Printf("->     ");
 				}
 			}
 
 			if (is_admin)
-				CONS_Printf(M_GetText("%s"" (Admin)"), player_color);
+				CONS_Printf("\x85(Admin)");
 		
 			if (is_spectator)
-				CONS_Printf(M_GetText("%s"" (Spectator)"), player_color);
+				CONS_Printf("\x86(Spectator)");
 
 			CONS_Printf("\n");
 

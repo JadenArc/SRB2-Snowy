@@ -201,6 +201,7 @@ void V_DrawCharacter(INT32 x, INT32 y, INT32 c, boolean lowercaseallowed);
 void V_DrawChatCharacter(INT32 x, INT32 y, INT32 c, boolean lowercaseallowed, UINT8 *colormap);
 
 UINT8 *V_GetStringColormap(INT32 colorflags);
+const char *V_GetSkincolorCode(INT32 skincolor);
 
 void V_DrawLevelTitle(INT32 x, INT32 y, INT32 option, const char *string);
 

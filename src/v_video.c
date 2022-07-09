@@ -2012,6 +2012,82 @@ UINT8 *V_GetStringColormap(INT32 colorflags)
 	}
 }
 
+// Jaden: Stupid way to get a colormap via color codes
+//
+const char *V_GetSkincolorCode(INT32 skincolor)
+{
+	const char *color_string = "";
+
+	switch (skincolors[skincolor].chatcolor)
+	{
+		case V_MAGENTAMAP:
+			color_string = "\x81";
+			break;
+
+		case V_YELLOWMAP:
+			color_string = "\x82";
+			break;
+
+		case V_GREENMAP:
+			color_string = "\x83";
+			break;
+
+		case V_BLUEMAP:
+			color_string = "\x84";
+			break;
+
+		case V_REDMAP:
+			color_string = "\x85";
+			break;
+
+		case V_GRAYMAP:
+			color_string = "\x86";
+			break;
+
+		case V_ORANGEMAP:
+			color_string = "\x87";
+			break;
+
+		case V_SKYMAP:
+			color_string = "\x88";
+			break;
+
+		case V_PURPLEMAP:
+			color_string = "\x89";
+			break;
+
+		case V_AQUAMAP:
+			color_string = "\x8A";
+			break;
+
+		case V_PERIDOTMAP:
+			color_string = "\x8B";
+			break;
+
+		case V_AZUREMAP:
+			color_string = "\x8C";
+			break;
+
+		case V_BROWNMAP:
+			color_string = "\x8D";
+			break;
+
+		case V_ROSYMAP:
+			color_string = "\x8E";
+			break;
+
+		case V_INVERTMAP:
+			color_string = "\x8F";
+			break;
+
+		default:
+			color_string = "\x82";
+			break;
+	}
+
+	return color_string;
+}
+
 // Writes a single character (draw WHITE if bit 7 set)
 //
 void V_DrawCharacter(INT32 x, INT32 y, INT32 c, boolean lowercaseallowed)
