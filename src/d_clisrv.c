@@ -3073,38 +3073,96 @@ SINT8 nametonum(const char *name)
 static void Command_Nodes(void)
 {
 	INT32 i;
-	size_t maxlen = 0;
+	int width = 0;
 	const char *address;
 
-	for (i = 0; i < MAXPLAYERS; i++)
-	{
-		const size_t plen = strlen(player_names[i]);
-		if (playeringame[i] && plen > maxlen)
-			maxlen = plen;
-	}
+	boolean is_admin, is_spectator;
+	INT32 totalplayers;
+	
+	int player_mode = 0;
+	int name;
+	const char *player_color;
+
+	/* 
+		"player_mode" can define 3 situations:
+		* 1, for Admins.
+		* 2, for Spectators.
+		* 4, for both, for some reason...
+	*/
 
 	for (i = 0; i < MAXPLAYERS; i++)
 	{
 		if (playeringame[i])
 		{
-			CONS_Printf("%.2u: %*s", i, (int)maxlen, player_names[i]);
+			name = strlen(player_names[i]);
+		
+			if (name > width)
+				width = name;
+		}
 
-			if (playernode[i] != UINT8_MAX)
-			{
-				CONS_Printf(" - node %.2d", playernode[i]);
-				if (I_GetNodeAddress && (address = I_GetNodeAddress(playernode[i])) != NULL)
-					CONS_Printf(" - %s", address);
-			}
+		if (player_mode != 7)
+		{
+			is_admin     = IsPlayerAdmin(i);
+			is_spectator = players[i].spectator;
 
-			if (IsPlayerAdmin(i))
-				CONS_Printf(M_GetText(" (verified admin)"));
-
-			if (players[i].spectator)
-				CONS_Printf(M_GetText(" (spectator)"));
-
-			CONS_Printf("\n");
+			if (is_admin)
+				player_mode |= 1;
+			
+			if (is_spectator)
+				player_mode |= 2;
+			
+			if (is_admin && is_spectator)
+				player_mode |= 4;
 		}
 	}
+
+
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		if (playeringame[i])
+		{
+			is_admin     = IsPlayerAdmin(i);
+			is_spectator = players[i].spectator;
+
+			if (is_admin)
+				player_color = "\x85"; 
+		
+			else if (is_spectator)
+				player_color = "\x86"; 
+		
+			else
+				player_color = "";
+
+			CONS_Printf("%.2d: %-*s \x80", i, width, player_names[i]);
+
+			if (I_GetNodeAddress)
+			{
+				if (( address = I_GetNodeAddress(playernode[i]) ))
+					CONS_Printf(" -- %s", address);
+				else
+				{
+					/* ...but not if there's a crammed status and were admin */
+					if (player_mode != 7 || !is_admin)
+						CONS_Printf(" --     ");
+				}
+			}
+
+			if (is_admin)
+				CONS_Printf(M_GetText("%s"" (Admin)"), player_color);
+		
+			if (is_spectator)
+				CONS_Printf(M_GetText("%s"" (Spectator)"), player_color);
+
+			CONS_Printf("\n");
+
+			totalplayers++;
+		}
+	}
+
+	if (totalplayers == 1)
+		CONS_Printf("\nThere is %c1 \x80player in the game.\n", '\x82');
+	else
+		CONS_Printf("\nThere are %c%d \x80players in the game.\n", '\x82', totalplayers);
 }
 
 static void Command_Ban(void)
