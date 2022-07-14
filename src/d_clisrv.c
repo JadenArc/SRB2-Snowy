@@ -3148,10 +3148,10 @@ static void Command_Nodes(void)
 			}
 
 			if (is_admin)
-				CONS_Printf("\x85(Admin)");
+				CONS_Printf("\x85 (Admin)");
 		
 			if (is_spectator)
-				CONS_Printf("\x86(Spectator)");
+				CONS_Printf("\x86 (Spectator)");
 
 			CONS_Printf("\n");
 
