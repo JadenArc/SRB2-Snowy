@@ -13336,10 +13336,10 @@ static void M_DrawVideoMode(void)
 	for (i = 0; i < vidm_nummodes; i++)
 	{
 		if (i == vidm_selected)
-			V_DrawString(row, col, highlightflags, modedescs[i].desc);
+			V_DrawString(row, col, highlightflags|V_ALLOWLOWERCASE, modedescs[i].desc);
 		// Show multiples of 320x200 as green.
 		else
-			V_DrawString(row, col, (modedescs[i].goodratio) ? V_GREENMAP : 0, modedescs[i].desc);
+			V_DrawString(row, col, ((modedescs[i].goodratio) ? V_GREENMAP : 0)|V_ALLOWLOWERCASE, modedescs[i].desc);
 
 		col += 8;
 		if ((i % vidm_column_size) == (vidm_column_size-1))
