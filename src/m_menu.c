@@ -1091,28 +1091,30 @@ static menuitem_t OP_HUDOptions[] =
 	
 	{IT_STRING | IT_CVAR, 				 NULL, "Show HUD",                  &cv_showhud,          11},
 	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "HUD Transparency",          &cv_translucenthud,   16},
-	{IT_STRING | IT_CVAR, 				 NULL, "Score/Time/Rings",          &cv_timetic,          21},
-	{IT_STRING | IT_CVAR, 				 NULL, "Show Powerups",             &cv_powerupdisplay,   26},
-	{IT_STRING | IT_CVAR,				 NULL, "Local ping display",		&cv_showping,		  31},
-	{IT_STRING | IT_CVAR,				 NULL, "Show player names",         &cv_seenames,         36},
-	{IT_STRING | IT_CVAR,				 NULL, "Show Input",			    &cv_showinput,		  41},
-	{IT_STRING | IT_CVAR,				 NULL, "Show Input Joy",			&cv_showinputjoy,     46},
 
-	{IT_HEADER, NULL, "Console", NULL, 55},
-	
-	{IT_STRING | IT_CVAR, NULL, "Background color",  &cons_backcolor,     61},
-	{IT_STRING | IT_CVAR, NULL, "Text Size",         &cv_constextsize,    66},
-	{IT_STRING | IT_CVAR, NULL, "Menu Highlights",	 &cons_menuhighlight, 71},
+	{IT_STRING | IT_CVAR, 				 NULL, "Score/Time/Rings",          &cv_timetic,          26},
+	{IT_STRING | IT_CVAR, 				 NULL, "Show Powerups",             &cv_powerupdisplay,   31},
+	{IT_STRING | IT_CVAR,				 NULL, "Show Input",			    &cv_showinput,		  36},
+	{IT_STRING | IT_CVAR,				 NULL, "Show Input Joy",			&cv_showinputjoy,     41},
 
-	{IT_HEADER, NULL, "Chat", NULL, 80},
+	{IT_HEADER, NULL, "Console", NULL, 50},
 	
-	{IT_STRING | IT_CVAR, 				 NULL, "Chat Mode",            		 	 &cv_consolechat,  		   86},
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Width",   				 &cv_chatwidth,     	   91},
-	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Height",  				 &cv_chatheight,    	   96},
-	{IT_STRING | IT_CVAR, 				 NULL, "Message Fadeout Time",           &cv_chattime,     		  101},
-	{IT_STRING | IT_CVAR,				 NULL, "Chat Notifications",           	 &cv_chatnotifications,   106},
-	{IT_STRING | IT_CVAR,				 NULL, "Spam Protection",           	 &cv_chatspamprotection,  111},
-	{IT_STRING | IT_CVAR,				 NULL, "Chat background tint",           &cv_chatbacktint,  	  116},
+	{IT_STRING | IT_CVAR, NULL, "Background color",  &cons_backcolor,     56},
+	{IT_STRING | IT_CVAR, NULL, "Text Size",         &cv_constextsize,    61},
+	{IT_STRING | IT_CVAR, NULL, "Menu Highlights",	 &cons_menuhighlight, 66},
+
+	{IT_HEADER, NULL, "Online HUD Options", NULL, 75},
+	
+	{IT_STRING | IT_CVAR, 				 NULL, "Chat Mode",            		 	 &cv_consolechat,  		   81},
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Width",   				 &cv_chatwidth,     	   86},
+	{IT_STRING | IT_CVAR | IT_CV_SLIDER, NULL, "Chat Box Height",  				 &cv_chatheight,    	   91},
+	{IT_STRING | IT_CVAR, 				 NULL, "Message Fadeout Time",           &cv_chattime,     		   96},
+	{IT_STRING | IT_CVAR,				 NULL, "Chat Notifications",           	 &cv_chatnotifications,   101},
+	{IT_STRING | IT_CVAR,				 NULL, "Spam Protection",           	 &cv_chatspamprotection,  106},
+	{IT_STRING | IT_CVAR,				 NULL, "Chat background tint",           &cv_chatbacktint,  	  111},
+
+	{IT_STRING | IT_CVAR,				 NULL, "Local ping display",  &cv_showping,  121},
+	{IT_STRING | IT_CVAR,				 NULL, "Show player names",   &cv_seenames,  126},
 };
 
 static menuitem_t OP_P1ControlsMenu[] =
@@ -1409,8 +1411,8 @@ static menuitem_t OP_VideoOptionsMenu[] =
 	{IT_STRING | IT_CVAR, NULL, "Show \"FOCUS LOST\"",       &cv_showfocuslost,   96},
 
 #ifdef HWRENDER
-	{IT_HEADER, NULL, "Renderer", NULL, 106},
-	{IT_CALL | IT_STRING, NULL, "OpenGL Options...",         M_OpenGLOptionsMenu, 112},
+	{IT_HEADER, NULL, "Renderer", NULL, 105},
+	{IT_CALL | IT_STRING, NULL, "OpenGL Options...",         M_OpenGLOptionsMenu, 111},
 #endif
 };
 
@@ -4320,6 +4322,7 @@ static void M_DrawMapEmblems(INT32 mapnum, INT32 x, INT32 y)
 		// Shift over if emblem is of a different discipline
 		if (lasttype != UINT8_MAX && lasttype != curtype)
 			x -= 4;
+
 		lasttype = curtype;
 
 		if (emblem->collected)
@@ -4329,7 +4332,7 @@ static void M_DrawMapEmblems(INT32 mapnum, INT32 x, INT32 y)
 			V_DrawSmallScaledPatch(x, y, 0, W_CachePatchName("NEEDIT", PU_PATCH));
 
 		emblem = M_GetLevelEmblems(-1);
-		x -= 12;
+		x -= 14;
 	}
 }
 
@@ -4767,9 +4770,12 @@ static void M_DrawPauseMenu(void)
 		M_DrawMapEmblems(gamemap, 272, 28);
 
 		if (mapheaderinfo[gamemap-1]->actnum != 0)
-			V_DrawThinString(40, 29, highlightflags|V_ALLOWLOWERCASE, va("%s Zone, Act %d", mapheaderinfo[gamemap-1]->lvlttl, mapheaderinfo[gamemap-1]->actnum));
+			V_DrawThinString(40, 29, V_ALLOWLOWERCASE, va("%s\x80 Zone, %cAct \x80%d", mapheaderinfo[gamemap-1]->lvlttl, '\x82', mapheaderinfo[gamemap-1]->actnum));
 		else
-			V_DrawThinString(40, 29, highlightflags|V_ALLOWLOWERCASE, va("%s Zone", mapheaderinfo[gamemap-1]->lvlttl));
+			V_DrawThinString(40, 29, V_ALLOWLOWERCASE, va("%s\x80 Zone", mapheaderinfo[gamemap-1]->lvlttl));
+
+		if (mapheaderinfo[gamemap-1]->subttl)
+			V_DrawSmallString(40, 37, V_ALLOWLOWERCASE, mapheaderinfo[gamemap-1]->subttl);
 
 		// Set up the detail boxes.
 		{
@@ -4871,26 +4877,26 @@ static void M_DrawPauseMenu(void)
 				continue;
 
 			if (emblem->collected)
-				V_DrawSmallMappedPatch(40, 44 + (i*8), 0, W_CachePatchName(M_GetEmblemPatch(emblem, false), PU_PATCH),
+				V_DrawSmallMappedPatch(40, 44 + (i * 9), 0, W_CachePatchName(M_GetEmblemPatch(emblem, false), PU_PATCH),
 				                       R_GetTranslationColormap(TC_DEFAULT, M_GetEmblemColor(emblem), GTC_CACHE));
 			else
-				V_DrawSmallScaledPatch(40, 44 + (i*8), 0, W_CachePatchName("NEEDIT", PU_PATCH));
+				V_DrawSmallScaledPatch(40, 44 + (i * 9), 0, W_CachePatchName("NEEDIT", PU_PATCH));
 
 			switch (emblem->type)
 			{
 				case ET_SCORE:
 				case ET_NGRADE:
-					V_DrawString(56, 44 + (i*8), highlightflags, "SCORE:");
+					V_DrawString(56, 44 + (i * 9), V_YELLOWMAP, "SCORE:");
 					break;
 				case ET_TIME:
 				case ET_NTIME:
-					V_DrawString(56, 44 + (i*8), highlightflags, "TIME:");
+					V_DrawString(56, 44 + (i * 9), V_YELLOWMAP, "TIME:");
 					break;
 				case ET_RINGS:
-					V_DrawString(56, 44 + (i*8), highlightflags, "RINGS:");
+					V_DrawString(56, 44 + (i * 9), V_YELLOWMAP, "RINGS:");
 					break;
 			}
-			V_DrawRightAlignedString(284, 44 + (i*8), V_MONOSPACE, emblem_text[i]);
+			V_DrawRightAlignedString(284, 44 + (i * 9), V_MONOSPACE, emblem_text[i]);
 		}
 	}
 
@@ -6076,10 +6082,50 @@ static void M_DrawNightsAttackBackground(void)
 static patch_t *ntssupersonic[2];
 static void M_DrawNightsAttackSuperSonic(void)
 {
-	const UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_YELLOW, GTC_CACHE);
-	INT32 timer = (ntsatkdrawtimer/4) % 2;
-	angle_t fa = (FixedAngle(((ntsatkdrawtimer * 4) % 360)<<FRACBITS)>>ANGLETOFINESHIFT) & FINEMASK;
-	V_DrawFixedPatch(235<<FRACBITS, (120<<FRACBITS) - (8*FINESINE(fa)), FRACUNIT, 0, ntssupersonic[timer], colormap);
+	patch_t *superPatch;
+	const UINT8 *colormap;
+
+	INT32 x, y;
+	UINT32 flipped;
+
+	fixed_t scale;
+
+	INT32 frame_timer = (ntsatkdrawtimer / 4) % skins[cv_chooseskin.value-1].sprites[SPR2_NFLY].numframes;
+	INT32 fail_timer = (ntsatkdrawtimer / 4) % 2;
+
+	INT32 supercolor_timer = abs( ( (ntsatkdrawtimer >> 1) % 9) - 4) // Me when i, take this from p_user.c
+
+	// Do we have this sprite on our current selected skin?
+	if (skins[cv_chooseskin.value-1].sprites[SPR2_NFLY].numframes)
+	{
+		spritedef_t *sprdef = &skins[cv_chooseskin.value-1].sprites[SPR2_NFLY];
+		spriteframe_t *sprframe = &sprdef->spriteframes[frame_timer];
+		
+		x = 250, y = 184;
+		flipped = (sprframe->rotate == SRF_2D) ? V_FLIP : 0;
+
+		scale = skins[cv_chooseskin.value-1].highresscale;
+
+		colormap = R_GetTranslationColormap(TC_BLINK, skins[cv_chooseskin.value-1].supercolor + supercolor_timer, GTC_CACHE);
+		superPatch = W_CachePatchNum(sprframe->lumppat[0], PU_PATCH);
+	}
+
+	// Otherwise, use the "Super Sonic Patch" if we fail on getting the sprite.
+	else
+	{
+		x = 235, y = 120;
+		flipped = 0;
+
+		scale = FRACUNIT;
+
+		colormap = R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_SUPERGOLD1 + supercolor_timer, GTC_CACHE);
+		superPatch = ntssupersonic[fail_timer];
+	}
+
+
+	angle_t fa = (FixedAngle(((ntsatkdrawtimer * 4) % 360) << FRACBITS) >> ANGLETOFINESHIFT) & FINEMASK;
+	
+	V_DrawFixedPatch(x << FRACBITS, (y << FRACBITS) - (6 * FINESINE(fa)), scale, flipped, superPatch, colormap);
 }
 
 static void M_DrawLevelPlatterMenu(void)
@@ -9850,8 +9896,8 @@ static void M_DrawLevelStats(void)
 
 	M_DrawMenuTitle();
 
-	V_DrawString(20, 24, highlightflags, "Total Play Time:");
-	V_DrawCenteredString(BASEVIDWIDTH/2, 32, 0, va("%i hours, %i minutes, %i seconds",
+	V_DrawString(20, 24, highlightflags|V_ALLOWLOWERCASE, "Total Play Time:");
+	V_DrawCenteredString(BASEVIDWIDTH/2, 32, V_ALLOWLOWERCASE, va("\x83%i \x80hours, \x83%i \x80minutes, \x83%i \x80seconds",
 	                         G_TicsToHours(totalplaytime),
 	                         G_TicsToMinutes(totalplaytime, false),
 	                         G_TicsToSeconds(totalplaytime)));
@@ -10136,7 +10182,7 @@ void M_DrawTimeAttackMenu(void)
 		else
 			sprintf(beststr, "%u", mainrecords[cv_nextmap.value-1]->score);
 
-		V_DrawString(104-72, 33+lsheadingheight/2, highlightflags, "SCORE:");
+		V_DrawString(104-72, 33+lsheadingheight/2, V_YELLOWMAP, "SCORE:");
 		V_DrawRightAlignedString(104+64, 33+lsheadingheight/2, V_ALLOWLOWERCASE, beststr);
 		V_DrawRightAlignedString(104+72, 43+lsheadingheight/2, V_ALLOWLOWERCASE, reqscore);
 
@@ -10147,7 +10193,7 @@ void M_DrawTimeAttackMenu(void)
 			                                 G_TicsToSeconds(mainrecords[cv_nextmap.value-1]->time),
 			                                 G_TicsToCentiseconds(mainrecords[cv_nextmap.value-1]->time));
 
-		V_DrawString(104-72, 53+lsheadingheight/2, highlightflags, "TIME:");
+		V_DrawString(104-72, 53+lsheadingheight/2, V_YELLOWMAP, "TIME:");
 		V_DrawRightAlignedString(104+64, 53+lsheadingheight/2, V_ALLOWLOWERCASE, beststr);
 		V_DrawRightAlignedString(104+72, 63+lsheadingheight/2, V_ALLOWLOWERCASE, reqtime);
 
@@ -10156,7 +10202,7 @@ void M_DrawTimeAttackMenu(void)
 		else
 			sprintf(beststr, "%hu", mainrecords[cv_nextmap.value-1]->rings);
 
-		V_DrawString(104-72, 73+lsheadingheight/2, highlightflags, "RINGS:");
+		V_DrawString(104-72, 73+lsheadingheight/2, V_YELLOWMAP, "RINGS:");
 
 		V_DrawRightAlignedString(104+64, 73+lsheadingheight/2, V_ALLOWLOWERCASE|((mapvisited[cv_nextmap.value-1] & MV_PERFECTRA) ? highlightflags : 0), beststr);
 
@@ -10171,11 +10217,11 @@ void M_DrawTimeAttackMenu(void)
 		x = SP_TimeAttackDef.x;
 		y = SP_TimeAttackDef.y;
 
-		V_DrawString(x, y + SP_TimeAttackMenu[talevel].alphaKey, V_TRANSLUCENT, SP_TimeAttackMenu[talevel].text);
+		V_DrawString(x, y + SP_TimeAttackMenu[talevel].alphaKey, V_TRANSLUCENT|V_ALLOWLOWERCASE, SP_TimeAttackMenu[talevel].text);
 
 		ncv = (consvar_t *)SP_TimeAttackMenu[taplayer].itemaction;
-		V_DrawString(x, y + SP_TimeAttackMenu[taplayer].alphaKey, V_TRANSLUCENT, SP_TimeAttackMenu[taplayer].text);
-		V_DrawString(BASEVIDWIDTH - x - V_StringWidth(ncv->string, 0), y + SP_TimeAttackMenu[taplayer].alphaKey, highlightflags|V_TRANSLUCENT, ncv->string);
+		V_DrawString(x, y + SP_TimeAttackMenu[taplayer].alphaKey, V_TRANSLUCENT|V_ALLOWLOWERCASE, SP_TimeAttackMenu[taplayer].text);
+		V_DrawString(BASEVIDWIDTH - x - V_StringWidth(ncv->string, 0), y + SP_TimeAttackMenu[taplayer].alphaKey, highlightflags|V_TRANSLUCENT|V_ALLOWLOWERCASE, ncv->string);
 	}
 }
 
@@ -10359,7 +10405,7 @@ void M_DrawNightsAttackMenu(void)
 
 		if (P_HasGrades(cv_nextmap.value, cv_dummymares.value))
 			{//make bigger again
-			V_DrawString(104 - 72, 48+lsheadingheight/2, highlightflags, "BEST GRADE:");
+			V_DrawString(104 - 72, 48+lsheadingheight/2, V_YELLOWMAP, "BEST GRADE:");
 			V_DrawSmallScaledPatch(104 + 72 - (ngradeletters[bestgrade]->width/2),
 				48+lsheadingheight/2 + 8 - (ngradeletters[bestgrade]->height/2),
 				0, ngradeletters[bestgrade]);
@@ -10370,7 +10416,7 @@ void M_DrawNightsAttackMenu(void)
 		else
 			sprintf(beststr, "%u", bestscore);
 
-		V_DrawString(104 - 72, 58+lsheadingheight/2, highlightflags, "BEST SCORE:");
+		V_DrawString(104 - 72, 58+lsheadingheight/2, V_YELLOWMAP, "BEST SCORE:");
 		V_DrawRightAlignedString(104 + 72, 58+lsheadingheight/2, V_ALLOWLOWERCASE, beststr);
 
 		if (besttime == UINT32_MAX)
@@ -10380,7 +10426,7 @@ void M_DrawNightsAttackMenu(void)
 																			 G_TicsToSeconds(besttime),
 																			 G_TicsToCentiseconds(besttime));
 
-		V_DrawString(104 - 72, 68+lsheadingheight/2, highlightflags, "BEST TIME:");
+		V_DrawString(104 - 72, 68+lsheadingheight/2, V_YELLOWMAP, "BEST TIME:");
 		V_DrawRightAlignedString(104 + 72, 68+lsheadingheight/2, V_ALLOWLOWERCASE, beststr);
 
 		if (cv_dummymares.value == 0) {
@@ -10416,7 +10462,7 @@ void M_DrawNightsAttackMenu(void)
 
 	// ALWAYS DRAW level even when not on this menu!
 	if (currentMenu != &SP_NightsAttackDef)
-		V_DrawString(SP_NightsAttackDef.x, SP_NightsAttackDef.y + SP_TimeAttackMenu[nalevel].alphaKey, V_TRANSLUCENT, SP_NightsAttackMenu[nalevel].text);
+		V_DrawString(SP_NightsAttackDef.x, SP_NightsAttackDef.y + SP_TimeAttackMenu[nalevel].alphaKey, V_TRANSLUCENT|V_ALLOWLOWERCASE, SP_NightsAttackMenu[nalevel].text);
 }
 
 static void M_NightsAttackLevelSelect(INT32 choice)
@@ -13126,7 +13172,7 @@ static void M_ChangeControl(INT32 choice)
 		return;
 
 	controltochange = currentMenu->menuitems[choice].alphaKey;
-	sprintf(tmp, M_GetText("Hit the new key for\n%s\nESC for Cancel"),
+	sprintf(tmp, M_GetText("Hit the new key for\n\x82%s\x80.\nESC for Cancel"),
 		currentMenu->menuitems[choice].text);
 	strlcpy(controltochangetext, currentMenu->menuitems[choice].text, 33);
 
