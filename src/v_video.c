@@ -2018,7 +2018,7 @@ const char *V_GetSkincolorCode(INT32 skincolor)
 {
 	const char *color_string = "";
 
-	switch (skincolors[skincolor].chatcolor)
+	switch (skincolor)
 	{
 		case V_MAGENTAMAP:
 			color_string = "\x81";

@@ -156,6 +156,7 @@ consvar_t cons_backcolor = CVAR_INIT ("con_backcolor", "Green", CV_CALL|CV_SAVE,
 
 static CV_PossibleValue_t menuhighlight_cons_t[] =
 {
+	{0, 		 "Gametype Default"},
 	{V_YELLOWMAP,  "Always Yellow"},
 	{V_MAGENTAMAP, "Always Magenta"},
 	{V_GREENMAP,	 "Always Green"},
@@ -173,7 +174,7 @@ static CV_PossibleValue_t menuhighlight_cons_t[] =
 	{V_INVERTMAP,	 "Always Inverted"},
 	{0, NULL}
 };
-consvar_t cons_menuhighlight = CVAR_INIT ("con_menuhighlight", "Always Yellow", CV_SAVE, menuhighlight_cons_t, NULL);
+consvar_t cons_menuhighlight = CVAR_INIT ("con_menuhighlight", "Gametype Default", CV_SAVE, menuhighlight_cons_t, NULL);
 
 
 static void CON_Print(char *msg);

@@ -3072,16 +3072,8 @@ SINT8 nametonum(const char *name)
   */
 static void Command_Nodes(void)
 {
-	// Yeah
-	if (gamestate != GS_LEVEL || demoplayback)
-	{	
-		CONS_Printf("You must be in a level to use this.\n");
-		return;
-	}
-
 	INT32 i;
 	int width = 0;
-	const char *address;
 
 	boolean is_admin, is_spectator;
 	INT32 totalplayers;
@@ -3131,21 +3123,21 @@ static void Command_Nodes(void)
 			is_admin     = IsPlayerAdmin(i);
 			is_spectator = players[i].spectator;
 
-			player_skincolor = V_GetSkincolorCode(players[i].skincolor);
+			player_skincolor = V_GetSkincolorCode(skincolors[players[i].skincolor].chatcolor);
 
-			CONS_Printf("\x82[\x86%.2d\x82] %s%-*s \x80", i, player_skincolor, width, player_names[i]);
+			CONS_Printf("\x82%.2d\x80: %s%-*s \x80", i, player_skincolor, width, player_names[i]);
 
-			if (I_GetNodeAddress)
-			{
-				if ((address = I_GetNodeAddress(playernode[i])))
-					CONS_Printf("-> %s", address);
-				else
-				{
-					/* ...but not if there's a crammed status and were admin */
-					if (player_mode != 7 || !is_admin)
-						CONS_Printf("->     ");
-				}
-			}
+			// That's you!
+			if (i == consoleplayer)
+				CONS_Printf("-> Self.");
+			
+			// A bot?
+			else if (players[i].bot)
+				CONS_Printf("-> %cBot.", '\x86');
+			
+			// Print nothing otherwise.
+			else
+				CONS_Printf(" ");
 
 			if (is_admin)
 				CONS_Printf("\x85 (Admin)");
@@ -3159,10 +3151,10 @@ static void Command_Nodes(void)
 		}
 	}
 
-	if (totalplayers == 1)
-		CONS_Printf("\nThere is %c1 \x80player in the game.\n", '\x82');
+	if (totalplayers)
+		CONS_Printf("\nThere is \x82%d \x80player%s in the game.\n", totalplayers, (totalplayers == 1) ? "" : "s");
 	else
-		CONS_Printf("\nThere are %c%d \x80players in the game.\n", '\x82', totalplayers);
+		CONS_Printf("\nThere ain't any players! (Are you on a game?)\n");
 }
 
 static void Command_Ban(void)

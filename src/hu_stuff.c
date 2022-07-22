@@ -2240,6 +2240,9 @@ static void JH_DrawRankings(playersort_t *tab, INT32 scorelines, INT32 whiteplay
 {
 	INT32 x = 40, y = 32;
 
+	void (*V_DrawTrueRightString)(INT32, INT32, INT32, const char *);
+	void (*V_DrawTrueString)(INT32, INT32, INT32, const char *);
+
 	INT32 i, rightoffset = 240;
 	char name[MAXPLAYERNAME+1];
 	const UINT8 *colormap;
@@ -2255,6 +2258,18 @@ static void JH_DrawRankings(playersort_t *tab, INT32 scorelines, INT32 whiteplay
 	{
 		V_DrawFill(160, 26, 1, 156, 0); // Draw a vertical line to separate the two sides.
 		rightoffset = (BASEVIDWIDTH/2) - 4 - x;
+	}
+
+	// Alignment.
+	if (scorelines > 9)
+	{
+		V_DrawTrueRightString = V_DrawRightAlignedThinString;
+		V_DrawTrueString = V_DrawThinString;
+	}
+	else
+	{
+		V_DrawTrueRightString = V_DrawRightAlignedString;
+		V_DrawTrueString = V_DrawString;
 	}
 
 	//
@@ -2284,10 +2299,7 @@ static void JH_DrawRankings(playersort_t *tab, INT32 scorelines, INT32 whiteplay
 			// shortcut moment
 			UINT32 colflg = (tab[i].num == whiteplayer) ? skincolors[tab[i].color].chatcolor : 0;
 
-			if (scorelines > 9)
-				V_DrawThinString(x + 20, y, colflg|V_ALLOWLOWERCASE|flags, name);
-			else
-				V_DrawString(x + 20, y, colflg|V_ALLOWLOWERCASE|flags, name);
+			V_DrawTrueString(x + 20, y, colflg|V_ALLOWLOWERCASE|flags, name);
 		}
 
 		// player lives, like so cool
@@ -2312,59 +2324,31 @@ static void JH_DrawRankings(playersort_t *tab, INT32 scorelines, INT32 whiteplay
 		//
 		// Score!
 		//
-		if (scorelines > 9)
+
+		// We are on a race.
+		if (gametyperankings[gametype] == GT_RACE)
 		{
-			if (gametyperankings[gametype] == GT_RACE) // are we on a race?
-			{
-				UINT32 finishmap = players[tab[i].num].exiting ? V_GREENMAP : 0;
+			UINT32 finishmap = players[tab[i].num].exiting ? V_GREENMAP : 0;
 
-				if (circuitmap)
-					if (players[tab[i].num].exiting)
-						V_DrawRightAlignedThinString(x + rightoffset, y, finishmap, "FIN");
-					else
-						V_DrawRightAlignedThinString(x + rightoffset, y, V_ALLOWLOWERCASE, va("Lap %d", tab[i].count));
+			if (circuitmap)
+				if (players[tab[i].num].exiting)
+					V_DrawTrueRightString(x + rightoffset, y, finishmap, "FIN");
+				else
+					V_DrawTrueRightString(x + rightoffset, y, V_ALLOWLOWERCASE, va("Lap %d", tab[i].count));
 
-				else
-					V_DrawRightAlignedThinString(x + rightoffset, y, finishmap, DrawTimer(tab[i].count));
-			}
-			else // are we on another netgame?
-			{
-				if (players[tab[i].num].spectator)
-					// died epicly
-					V_DrawRightAlignedThinString(x + rightoffset, y, V_SKYMAP|flags, "Spec");
-							
-				else
-					// your score
-					V_DrawRightAlignedThinString(x + rightoffset, y, flags, va("%d", tab[i].count));
-			}
+			else
+				V_DrawTrueRightString(x + rightoffset, y, finishmap, DrawTimer(tab[i].count));
 		}
+
+		// Otherwise, in another gametype.
 		else
 		{
-			if (gametyperankings[gametype] == GT_RACE) // are we on a race?
-			{
-				UINT32 finishmap = players[tab[i].num].exiting ? V_GREENMAP : 0;
-
-				if (circuitmap)
-					if (players[tab[i].num].exiting)
-						V_DrawRightAlignedString(x + rightoffset, y, finishmap, "FIN");
-					else
-						V_DrawRightAlignedString(x + rightoffset, y, V_ALLOWLOWERCASE, va("Lap %d", tab[i].count));
-
-				else
-					V_DrawRightAlignedString(x + rightoffset, y, finishmap, DrawTimer(tab[i].count));
-			}
-			else // are we on a another netgame?
-			{
-				if (players[tab[i].num].spectator)
-					// died epicly
-					V_DrawRightAlignedString(x + rightoffset, y, V_SKYMAP|flags, "Spec");
-							
-				else
-					// your score
-					V_DrawRightAlignedString(x + rightoffset, y, flags, va("%d", tab[i].count));
-			}
+			if (players[tab[i].num].spectator)
+				V_DrawTrueRightString(x + rightoffset, y, V_SKYMAP|flags, "Spec");
+			else
+				V_DrawTrueRightString(x + rightoffset, y, flags, va("%d", tab[i].count));
 		}
-
+		
 		//
 		// Icons
 		//
